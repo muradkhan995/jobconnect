@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+// Allow every route to render per request: each response needs a fresh CSP nonce,
+// which a prerendered static shell cannot carry (ADR-008).
+export const instant = false;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +23,9 @@ export const metadata: Metadata = {
     "A job marketplace with verified employers and real-time application tracking.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Every page renders per request so it gets a fresh CSP nonce (ADR-008).
+  await connection();
   return (
     <html
       lang="en"
