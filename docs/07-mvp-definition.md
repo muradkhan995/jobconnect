@@ -33,7 +33,7 @@ FR-AUTH-001 to FR-AUTH-008 (registration, verification, login, logout, password 
 | FR-CAN-001 Basic profile | FR-CAN-002/003/004 Education, employment, skills |
 | FR-CAN-005 CV upload | FR-CAN-009 Bookmarks |
 | FR-CAN-006 Keyword search | FR-CAN-014 Withdraw |
-| FR-CAN-007 Filters: **location and job type only** | FR-CAN-007 Remaining filters |
+| FR-CAN-007 Filters: **location, work mode and job type only** | FR-CAN-007 Remaining filters |
 | FR-CAN-008 Job details | FR-CAN-015/016 Notifications |
 | FR-CAN-010/011/012 Apply (once, before deadline) | |
 | FR-CAN-013 Application history with status | |

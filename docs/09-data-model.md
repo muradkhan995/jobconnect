@@ -23,7 +23,7 @@ and expensive later. Release 1.0 tables are listed in §8 but not designed in de
 | Status fields | Postgres `enum` types | DB rejects unknown values |
 | Emails | `citext` (case-insensitive text) | `Amira@x.com` and `amira@x.com` are the same user (FR-AUTH-004) |
 | Deletion | **Hard delete + anonymise**, no soft-delete flags | GDPR erasure (NFR-PRV-003) means data must really go |
-| Money | Integer, whole pounds, **annual** salary | No floating-point rounding; currency column kept for later |
+| Money | Integer, whole pounds, plus a `salary_period` (YEAR / DAY / HOUR) | No floating-point rounding; day rates fit contract jobs; currency column kept for later |
 
 ## 2. Entity-Relationship Overview
 
@@ -105,7 +105,7 @@ Seeded by a migration; editable by admins.
 | Column | Type | Rules |
 |---|---|---|
 | id | uuid PK | |
-| owner_user_id | uuid FK → user | **UNIQUE** – one company per employer in this release (FR-EMP-005 is Won't) |
+| owner_user_id | uuid FK → user | **UNIQUE** – one company per employer in this release (FR-EMP-005 is Won't). NULL only after the owner's account is erased (BR-USR-004); `ON DELETE SET NULL` |
 | name | text | NOT NULL |
 | description | text | NOT NULL |
 | industry_id | uuid FK → industry | `ON DELETE RESTRICT` |
@@ -126,11 +126,13 @@ Seeded by a migration; editable by admins.
 | title | text | NOT NULL, ≤ 120 chars |
 | description | text | NOT NULL |
 | requirements | text | NOT NULL |
-| location | text | NOT NULL |
+| location | text | NULL only when `work_mode = 'REMOTE'` – CHECK (BR-JOB-010) |
+| work_mode | enum `work_mode` | ON_SITE, HYBRID, REMOTE (FR-CAN-007) |
 | job_type | enum `job_type` | FULL_TIME, PART_TIME, CONTRACT, TEMPORARY, INTERNSHIP |
 | experience_level | enum `experience_level` | ENTRY, JUNIOR, MID, SENIOR, LEAD |
 | industry_id | uuid FK → industry | `ON DELETE RESTRICT` |
 | salary_min / salary_max | integer | NOT NULL; CHECK `0 <= salary_min <= salary_max` (BR-JOB-003) |
+| salary_period | enum `salary_period` | YEAR, DAY, HOUR – default YEAR |
 | currency | char(3) | default `GBP` |
 | deadline | timestamptz | NOT NULL (the 1–90 day window is checked in the service at submit time, because a CHECK constraint can't compare against "now" reliably) |
 | status | enum `job_status` | DRAFT, PENDING_APPROVAL, PUBLISHED, PAUSED, REJECTED, CLOSED, REMOVED (BR §3) |
@@ -187,6 +189,9 @@ rather than keeping a second user table.
 | request_id | text | Links to application logs |
 | metadata | jsonb | Reasons, old/new status – **never** names, emails or CV content (NFR-PRV-004) |
 
+**Retention (BR-AUD-001):** entries older than 24 months are deleted by a daily system job using a
+separate DB role; the trigger allows only that age-based delete. Index on `occurred_at` makes it cheap.
+
 **Why no foreign keys:** a FK to `user` would either block deleting the user or force an `UPDATE` /
 `DELETE` on audit rows – both break FR-ADM-021. Append-only is enforced by DB permissions plus a trigger
 (architecture doc §5.4).
@@ -215,7 +220,7 @@ overwriting. This stops two tabs (or an employer and a withdrawing candidate) fr
 
 | # | Query | Frequency | Index |
 |---|---|---|---|
-| Q1 | **Job search**: published, deadline in future, company visible, keyword, location, job type; newest first; paginated | Very high | `GIN (search_vector)`; partial `(published_at DESC) WHERE status = 'PUBLISHED'` |
+| Q1 | **Job search**: published, deadline in future, company visible, keyword, location, work mode, job type; newest first; paginated | Very high | `GIN (search_vector)`; partial `(published_at DESC) WHERE status = 'PUBLISHED'` |
 | Q2 | Candidate's application history (FR-CAN-013) | High | `(candidate_id, applied_at DESC)` |
 | Q3 | Applicants for one job (FR-EMP-014) | High | `UNIQUE (job_id, candidate_id)` covers `job_id` lookups; add `(job_id, applied_at DESC)` |
 | Q4 | Employer's jobs with application counts (FR-EMP-013) | Medium | `(company_id, created_at DESC)` on job; counts via `GROUP BY job_id` on Q3's index |
@@ -244,6 +249,8 @@ before NFR-PERF-001 is called met.
 | Erasure job (NFR-PRV-003) | Delete CV files + snapshot files from storage → delete `cv` rows → anonymise applications (`candidate_id`, `cv_*`, `cover_letter` → NULL, `anonymised_at` set) → delete `candidate_profile` → delete `user` row | Daily, ≤ 30 days |
 | Job closed > 12 months (BR-APP-009) | Same anonymisation for that job's applications | Daily |
 | Unverified > 7 days (BR-USR-001) | Delete `user` row (nothing else exists yet) | Daily |
+| Employer deletion via support (BR-USR-004) | Admin closes open jobs → set `company.owner_user_id` to NULL (column becomes nullable) → delete `user` row; company name stays on past applications | On request, ≤ 30 days |
+| Audit entries > 24 months (BR-AUD-001) | Delete the entries | Daily |
 
 Files are deleted **before** the database rows that point to them, so a failed run is simply retried
 (idempotent) and never leaves orphaned CVs that we've lost track of. Employers see anonymised applications
@@ -260,11 +267,8 @@ as "Candidate removed".
 `notification` (FR-CAN-015, FR-EMP-021) · `interview` (FR-EMP-019) · `application_note` (FR-EMP-020,
 never joined into candidate-facing queries) · `job_report` (FR-ADM-012/013).
 
-## 9. Open Questions
-- Q1: Salary as **annual whole pounds** only – are hourly/day-rate jobs (contracts) needed in the MVP?
-- Q2: How long are **audit log** entries kept? IP addresses are personal data under UK GDPR, so we need a
-  retention period (suggestion: 12 months, then IP is cleared).
-- Q3: Can **employers** delete their account? Phase 1 only covers candidates (FR-CAN-018); employer deletion
-  affects jobs and other people's applications.
-- Q4: Does `job.location` need structure (city + "remote" flag) for the location filter, or is free text enough
-  for the MVP?
+## 9. Decisions (PO, 2026-11-11)
+- Q1 Salary: ✅ whole pounds **plus `salary_period`** (YEAR / DAY / HOUR) – BR-JOB-003.
+- Q2 Audit retention: ✅ entries **deleted after 24 months** – BR-AUD-001.
+- Q3 Employer deletion: ✅ **via support only** in this release; self-service in Release 1.0 – BR-USR-004.
+- Q4 Location: ✅ free-text `location` **plus `work_mode`** (ON_SITE / HYBRID / REMOTE) – BR-JOB-010, FR-CAN-007.

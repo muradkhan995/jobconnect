@@ -39,7 +39,7 @@
 | ID | Requirement | Priority | Persona |
 |---|---|---|---|
 | FR-CAN-006 | The system shall allow searching published jobs by keyword. | M | Amira |
-| FR-CAN-007 | The system shall allow filtering jobs by location, salary range, job type, experience level and industry. | M | Amira |
+| FR-CAN-007 | The system shall allow filtering jobs by location, work mode (on-site / hybrid / remote), salary range, job type, experience level and industry. | M | Amira |
 | FR-CAN-008 | The system shall display full job details, including company, salary, requirements and deadline. | M | Amira |
 | FR-CAN-009 | The system shall allow a candidate to save (bookmark) and unsave jobs. | S | Amira |
 
@@ -85,7 +85,7 @@
 ### 3.2 Job Management
 | ID | Requirement | Priority | Persona |
 |---|---|---|---|
-| FR-EMP-006 | The system shall allow an employer to create a job as a draft (title, description, requirements, location, salary range, job type, experience level, industry, deadline). | M | David |
+| FR-EMP-006 | The system shall allow an employer to create a job as a draft (title, description, requirements, location, work mode, salary range and salary period (year / day / hour), job type, experience level, industry, deadline). | M | David |
 | FR-EMP-007 | The system shall require the application deadline to be a future date. | M | David |
 | FR-EMP-008 | The system shall allow an employer to submit a draft job for administrator approval. | M | David, Sophie |
 | FR-EMP-009 | The system shall allow an employer to edit their own jobs. | M | David |
@@ -97,7 +97,7 @@
 | ID | Requirement | Priority | Persona |
 |---|---|---|---|
 | FR-EMP-013 | The system shall display the employer's jobs with the number of applications for each. | M | David |
-| FR-EMP-014 | The system shall display applicants for a job: name, email, application date, CV, years of experience, status. | M | David |
+| FR-EMP-014 | The system shall display applicants for a job: name, application date, CV, years of experience, status. The candidate's email is shown only once the application is SHORTLISTED or later (BR-APP-010). | M | David |
 | FR-EMP-015 | The system shall allow an employer to view the profile and download the CV of candidates who applied to **their own company's jobs only**. | M | David |
 | FR-EMP-016 | The system shall allow filtering applicants by status, experience and application date. | S | David |
 | FR-EMP-017 | The system shall allow an employer to change an application's status according to the status lifecycle. | M | David |

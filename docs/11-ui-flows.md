@@ -46,6 +46,11 @@ Public (🌐)                     Candidate (C)                 Employer (E)    
 |---|---|
 | Visitor | Find jobs · Log in · Sign up |
 | Candidate | Find jobs · My applications · Profile & CVs · Account |
+
+**Candidate tab bar (PO decision, 2026-11-11):** logged-in candidates on screens under 768 px get a bottom
+tab bar with three tabs: **Find jobs · Applied · Me** (profile, CVs, account and logout live under "Me").
+Each tab has an icon **and** a text label and a touch target of at least 44 × 44 px. The sticky
+**Apply now** button sits directly above the tab bar. Everyone else uses the top navigation.
 | Employer | My jobs · Post a job · Company · Account |
 | Admin | Companies (badge: pending count) · Jobs (badge) · Users · Industries |
 
@@ -95,7 +100,7 @@ Amira: `/candidate/applications` → status updated to *"Shortlisted"* with date
 ├────────────────────────────┤
 │ 🔍 [ software engineer   ] │
 │ 📍 [ Manchester          ] │
-│ [Full-time ▾] [Filters]    │
+│ [Remote ▾] [Full-time ▾]   │
 ├────────────────────────────┤
 │ 42 jobs                    │
 │ ┌────────────────────────┐ │
@@ -173,7 +178,7 @@ rejection message.
 │ Name       │ Email               │ Applied    │ Status       │           │
 ├────────────┼─────────────────────┼────────────┼──────────────┼───────────┤
 │ Amira H.   │ amira@…             │ 12 Nov     │ Shortlisted  │ View  CV↓ │
-│ Ben T.     │ ben@…               │ 12 Nov     │ New          │ View  CV↓ │
+│ Ben T.     │ (after shortlisting)│ 12 Nov     │ New          │ View  CV↓ │
 │ Candidate removed               │ 11 Nov     │ Under review │ –         │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -240,5 +245,4 @@ Database statuses are never shown raw. Badge colour always comes with text (P6).
 
 ## 8. Open Questions
 - Q1: Brand/visual identity – is there a logo or colour preference, or should Phase 3 propose one?
-- Q2: Should the candidate bottom tab bar (§4.1) be used, or a hamburger menu only? Tab bar recommended for
-  the most-used candidate actions.
+- Q2: ✅ **Decided (PO, 2026-11-11):** candidate bottom tab bar on mobile – see §2.1.

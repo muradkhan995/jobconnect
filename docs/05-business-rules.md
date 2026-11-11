@@ -21,6 +21,7 @@ UNVERIFIED ──(verifies email)──▶ ACTIVE ◀──(admin reactivates)�
 | BR-USR-001 | An UNVERIFIED account cannot log in. Unverified accounts are deleted after 7 days. |
 | BR-USR-002 | A SUSPENDED user cannot log in; their published jobs (if employer) are hidden from search. |
 | BR-USR-003 | When a candidate account is DELETED, their profile and CVs are erased and their applications are anonymised ("Candidate removed"). |
+| BR-USR-004 | In this release, employers request account deletion through support; an admin performs it. Their open jobs are closed and their personal data (user account, email) is erased; the company name stays on past applications so candidates keep their history. |
 
 ## 2. Company Verification Lifecycle
 
@@ -50,7 +51,8 @@ DRAFT ──(employer submits)──▶ PENDING_APPROVAL ──(admin approves)�
 |---|---|
 | BR-JOB-001 | Only PUBLISHED jobs appear in search and accept applications. |
 | BR-JOB-002 | The deadline must be at least 1 day and at most 90 days in the future when submitted. |
-| BR-JOB-003 | Salary range is required; minimum must be ≤ maximum. Currency defaults to GBP. |
+| BR-JOB-003 | Salary range is required; minimum must be ≤ maximum. Each job states a salary period (per year, day or hour). Currency defaults to GBP. |
+| BR-JOB-010 | Every job has a work mode (ON_SITE, HYBRID or REMOTE). Location is required unless the job is REMOTE. |
 | BR-JOB-004 | Editing a PUBLISHED job's title, description, requirements or salary sends it back to PENDING_APPROVAL (hidden until re-approved). Existing applications are kept. |
 | BR-JOB-005 | Extending the deadline of a PUBLISHED job does not require re-approval. |
 | BR-JOB-006 | A PUBLISHED or PAUSED job becomes CLOSED automatically when its deadline passes. |
@@ -78,6 +80,8 @@ APPLIED ──▶ UNDER_REVIEW ──▶ SHORTLISTED ──▶ INTERVIEW ──�
 | BR-APP-007 | Every status change notifies the candidate and is recorded with who, when and (for REJECTED) an optional message. |
 | BR-APP-008 | Internal notes are visible only to the employer who owns the job and are never shown to the candidate. |
 | BR-APP-009 | Applications for jobs CLOSED more than 12 months ago are anonymised (GDPR storage limitation). |
+| BR-APP-010 | An employer sees a candidate's email address only once the application is SHORTLISTED or later (data minimisation). Name, CV and cover letter are visible from APPLIED. |
+| BR-AUD-001 | Audit log entries are kept for 24 months, then deleted automatically by a system job. No user, including admins, can delete them earlier. |
 
 ## 5. Permission Matrix (who can do what)
 

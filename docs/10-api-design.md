@@ -116,7 +116,7 @@ Paths are Better Auth's defaults; we don't rename them. Signup role and consent 
 ### 4.4 Jobs – public – `/api/v1/jobs`
 | Method & path | Role | Requirement | Notes |
 |---|---|---|---|
-| `GET /jobs` | 🌐 | FR-CAN-006/007, NFR-PERF-001 | Query: `q`, `location`, `jobType` (repeatable), `cursor`, `limit`. Returns visible jobs only (data model §5) |
+| `GET /jobs` | 🌐 | FR-CAN-006/007, NFR-PERF-001 | Query: `q`, `location`, `workMode` (repeatable), `jobType` (repeatable), `cursor`, `limit`. Returns visible jobs only (data model §5) |
 | `GET /jobs/{jobId}` | 🌐 | FR-CAN-008 | `404` if not visible – a paused or removed job looks the same as a missing one |
 | `GET /industries` | 🌐 | – | Active industries, for filters and forms |
 
@@ -149,8 +149,8 @@ Paths are Better Auth's defaults; we don't rename them. Signup role and consent 
 ### 4.8 Applications – employer – `/api/v1/employer`
 | Method & path | Role | Requirement | Notes |
 |---|---|---|---|
-| `GET /employer/jobs/{jobId}/applications` | E | FR-EMP-014 | Name, email, applied date, status (anonymised rows show "Candidate removed") |
-| `GET /employer/applications/{id}` | E | FR-EMP-015 | Candidate profile + cover letter + status history |
+| `GET /employer/jobs/{jobId}/applications` | E | FR-EMP-014 | Name, applied date, status; `email` is `null` until SHORTLISTED or later (BR-APP-010). Anonymised rows show "Candidate removed" |
+| `GET /employer/applications/{id}` | E | FR-EMP-015, BR-APP-010 | Candidate profile + cover letter + status history; same email rule (phone too) |
 | `GET /employer/applications/{id}/cv-url` | E | FR-EMP-015, NFR-SEC-008 | Signed URL to the **snapshot**, 5 min |
 | `POST /employer/applications/{id}/status` | E | FR-EMP-017/018, BR-APP-004/005/007 | Body `{ to, message? }`; `message` only allowed with `REJECTED`. `409 INVALID_TRANSITION` / `STATE_CHANGED` |
 
@@ -166,6 +166,7 @@ All admin endpoints: role A only; every write is ✍️ and requires a `reason` 
 | `GET /admin/users/{id}` | FR-ADM-005 | Never returns password hash or session data |
 | `POST /admin/users/{id}/suspend` | FR-ADM-006, BR-USR-002 | Body `{ reason }`; ends their sessions ✍️ |
 | `POST /admin/users/{id}/reactivate` | FR-ADM-006 | ✍️ |
+| `POST /admin/users/{id}/erase` | BR-USR-004 | Employer deletion requested via support; body `{ reason }`; closes open jobs, queues erasure ✍️ |
 | `GET /admin/companies?status=PENDING` | FR-ADM-007 | Oldest first (the queue) |
 | `GET /admin/companies/{id}` | FR-ADM-008 | |
 | `POST /admin/companies/{id}/verify` | FR-ADM-008 | ✍️ |
@@ -201,8 +202,8 @@ Admin accounts are created only by the setup script (`npm run admin:create`), ne
 - **Contract test:** CI fails if `openapi.json` changes without the committed copy being updated, so API
   changes are always visible in pull requests.
 
-## 7. Open Questions
-- Q1: Should job search be available to visitors without an account (as BR §5 says), or require login to
-  reduce scraping? Current design: public, with rate limits.
-- Q2: Employer applicant list shows candidate **email** (FR-EMP-014). Is that wanted before the candidate is
-  shortlisted, or should contact details appear only from `SHORTLISTED` onward (data minimisation, NFR-PRV-001)?
+## 7. Decisions (PO, 2026-11-11)
+- Q1 Public search: ✅ **public** – visitors can search and view jobs; login required to apply. Protected by
+  rate limits and the 50-per-page cap (§3, §5).
+- Q2 Candidate contact details: ✅ email (and phone) shown to employers **only from SHORTLISTED onward**
+  (BR-APP-010). Note: a candidate's CV may itself contain contact details – that is the candidate's choice.

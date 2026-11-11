@@ -119,7 +119,7 @@ Render, Railway or a small VPS can replace any of them without code changes (R-1
 | CI | GitHub Actions + Testcontainers | Throwaway per run |
 | Production | Fly.io + Neon + R2 | Real data |
 
-A staging environment is **not** needed for the MVP (YAGNI, R-11); add one before Release 1.0 if needed
+**Decision (PO, 2026-11-11):** no staging environment for the MVP (YAGNI, R-11); add one before Release 1.0 if needed
 (a Neon branch + second Fly app costs almost nothing).
 
 ## 5. Key Flows
@@ -149,6 +149,7 @@ A staging environment is **not** needed for the MVP (YAGNI, R-11); add one befor
 | Delete unverified accounts | Daily | BR-USR-001 (after 7 days) |
 | Erase deleted accounts' data + CV files | Daily | NFR-PRV-003 (within 30 days) |
 | Anonymise old applications | Daily | BR-APP-009 (jobs closed > 12 months) |
+| Delete old audit entries | Daily | BR-AUD-001 (older than 24 months) |
 | Auto-close jobs past deadline | Hourly | BR-JOB-006 (Release 1.0) |
 
 Every job is **idempotent** (safe to run twice) so retries never cause damage.
@@ -157,6 +158,9 @@ Every job is **idempotent** (safe to run twice) so retries never cause damage.
 - Table `audit_log` is insert-only. The app's database user is granted `INSERT` and `SELECT` only;
   `UPDATE`/`DELETE` are revoked, and a trigger rejects them as a second safeguard.
 - Entries store user ID, action, target, timestamp and IP, and **never** personal data such as CV contents.
+- **Retention (BR-AUD-001):** entries older than 24 months are deleted by the daily retention job. It connects
+  as a separate database role that may only `DELETE … WHERE occurred_at < now() - interval '24 months'`
+  (enforced by the trigger). No user or admin can delete entries (FR-ADM-021); only this system job can.
 
 ## 6. Security & Privacy Mapping
 
@@ -211,9 +215,10 @@ by tests and module boundaries); Next.js has a learning curve (R-03; mitigated b
 Postgres search won't scale to millions of jobs (we can add a search service if that ever becomes a real problem).
 
 ## 10. Open Questions
-- Q1: Product Owner sign-off on the hosting providers in §4 (all meet UK/EU and budget).
+- Q1: ✅ **Partly decided (PO, 2026-11-11):** Neon, Cloudflare R2, Resend and Sentry approved. App host
+  (Fly.io vs Render) deferred to Phase 3 – see Q4.
 - Q2: Custom domain name for production (needed for email SPF/DKIM/DMARC, R-09).
-- Q3: Is a staging environment wanted before Release 1.0?
+- Q3: ✅ **Decided (PO, 2026-11-11):** no staging environment for the MVP.
 - Q4: £0 hosting option – Render free tier instead of Fly.io. Free instances sleep after 15 min idle, which would stop the pg-boss worker; scheduled jobs (GDPR erasure etc.) would then need a GitHub Actions cron trigger. Decide in Phase 3.
 
 ## 11. Next Phase-2 Documents
