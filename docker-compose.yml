@@ -1,0 +1,24 @@
+# Local development services. Production uses managed services (docs/08-system-architecture.md §4).
+# Object storage (S3) and the email catcher are added with the stories that need them.
+services:
+  postgres:
+    # Keep the major version equal to production (Neon) – docs/09-data-model.md §7.
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: jobconnect
+      POSTGRES_PASSWORD: jobconnect
+      POSTGRES_DB: jobconnect
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobconnect -d jobconnect"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:
