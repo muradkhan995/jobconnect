@@ -7,7 +7,7 @@ Portfolio project built to production standard (UK/EU GDPR). Design documents li
 
 ## Tech stack
 
-Next.js (App Router) · TypeScript (strict) · Tailwind CSS · PostgreSQL · Vitest · GitHub Actions.
+Next.js (App Router) · TypeScript (strict) · Tailwind CSS · PostgreSQL + Prisma 7 · Zod · Vitest · GitHub Actions.
 See [`docs/08-system-architecture.md`](docs/08-system-architecture.md) for the full architecture.
 
 ## Getting started
@@ -18,6 +18,7 @@ Requirements: **Node 22** (`nvm use`) and **Docker**.
 npm install
 cp .env.example .env.local
 npm run db:up        # start local PostgreSQL
+npm run db:deploy    # apply database migrations
 npm run dev          # http://localhost:3000
 ```
 
