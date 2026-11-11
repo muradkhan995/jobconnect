@@ -1,0 +1,11 @@
+// JobConnect database schema – see docs/09-data-model.md.
+// Tables are added story by story; each change gets its own migration.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

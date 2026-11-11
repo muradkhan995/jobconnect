@@ -30,6 +30,38 @@ jobs:
       - run: npm run test:coverage
       - run: npm run build
 
+  integration:
+    name: Integration tests (PostgreSQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        # Same major as docker-compose.yml and production (docs/09-data-model.md §7).
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: jobconnect
+          POSTGRES_PASSWORD: jobconnect
+          POSTGRES_DB: jobconnect
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U jobconnect -d jobconnect"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://jobconnect:jobconnect@localhost:5432/jobconnect
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Applies every migration to an empty database, exactly as a deploy would.
+      - run: npm run db:deploy
+      # Fails if the schema and the migrations disagree (a forgotten migration).
+      - run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+      - run: npm run test:integration
+
   security:
     name: Dependency audit & secret scan
     runs-on: ubuntu-latest
