@@ -5,3 +5,5 @@ package-lock.json
 next-env.d.ts
 docs
 src/generated
+playwright-report
+test-results

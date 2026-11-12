@@ -13,7 +13,7 @@ const ROLE_NAV: Record<
   keyof typeof ROLE_LABEL,
   { href: string; label: string }[]
 > = {
-  CANDIDATE: [],
+  CANDIDATE: [{ href: "/jobs", label: "Find jobs" }],
   EMPLOYER: [
     { href: "/employer", label: "Dashboard" },
     { href: "/employer/jobs", label: "Jobs" },
@@ -49,7 +49,10 @@ export async function SiteHeader() {
             </nav>
           )}
         </div>
-        <nav aria-label="Account" className="flex items-center gap-3 text-sm">
+        <nav
+          aria-label="Account"
+          className="flex items-center gap-1 text-sm sm:gap-3"
+        >
           {user ? (
             <>
               <span className="hidden text-zinc-600 sm:inline dark:text-zinc-400">
@@ -60,14 +63,20 @@ export async function SiteHeader() {
           ) : (
             <>
               <Link
+                href="/jobs"
+                className="rounded-lg px-2 py-2 font-medium whitespace-nowrap sm:px-3 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+              >
+                Find jobs
+              </Link>
+              <Link
                 href="/login"
-                className="rounded-lg px-3 py-2 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                className="rounded-lg px-2 py-2 font-medium whitespace-nowrap sm:px-3 hover:bg-zinc-100 dark:hover:bg-zinc-900"
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg bg-zinc-900 px-3 py-2 font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"
+                className="rounded-lg bg-zinc-900 px-2 py-2 font-medium whitespace-nowrap sm:px-3 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"
               >
                 Sign up
               </Link>

@@ -65,14 +65,59 @@ export async function createVerifiedEmployer(
   companyName: string,
 ) {
   const user = await createUser("EMPLOYER", name);
+  const companyId = uuidv7();
   await withDb((c) =>
     c.query(
       `INSERT INTO company (id, owner_user_id, name, description, industry_id, size, location,
          verification_status, verified_at, updated_at)
        VALUES ($1, $2, $3, 'A verified company created for end-to-end tests in Leeds.',
          '01a1cd0d-dc07-78b7-898d-42f24fd57db7', 'SIZE_51_200', 'Leeds', 'VERIFIED', now(), now())`,
-      [uuidv7(), user.id, companyName],
+      [companyId, user.id, companyName],
     ),
   );
-  return user;
+  return { ...user, companyId };
+}
+
+/** Jobs for a verified company; each later one is published a second later (newest last). */
+export async function createPublishedJobs(
+  companyId: string,
+  jobs: {
+    title: string;
+    location?: string | null;
+    workMode?: string;
+    jobType?: string;
+    status?: string;
+  }[],
+) {
+  const ids: string[] = [];
+  await withDb(async (c) => {
+    for (const [i, j] of jobs.entries()) {
+      const id = uuidv7();
+      const status = j.status ?? "PUBLISHED";
+      await c.query(
+        `INSERT INTO job (id, company_id, title, description, requirements, location, work_mode,
+           job_type, experience_level, industry_id, salary_min, salary_max, deadline, status,
+           published_at, updated_at)
+         VALUES ($1, $2, $3,
+           'Join a friendly team. You will plan routes, talk to customers and keep our depot running.',
+           'Good communication and a can-do attitude.', $4, $5::work_mode, $6::job_type, 'MID',
+           '01a1cd0d-dc07-78b7-898d-42f24fd57db7', 28000, 34000, now() + interval '30 days',
+           $7::job_status,
+           CASE WHEN $7 = 'PUBLISHED' THEN now() - interval '1 hour' + ($8 || ' seconds')::interval END,
+           now())`,
+        [
+          id,
+          companyId,
+          j.title,
+          j.location === undefined ? "Leeds" : j.location,
+          j.workMode ?? "ON_SITE",
+          j.jobType ?? "FULL_TIME",
+          status,
+          String(i),
+        ],
+      );
+      ids.push(id);
+    }
+  });
+  return ids;
 }

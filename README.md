@@ -55,6 +55,7 @@ Emails the app sends locally (sign-up confirmation, password reset) land in **Ma
 | `npm run db:generate`                       | Regenerate the Prisma client (also runs after `npm install`)                                                                                                        |
 | `npm run db:studio`                         | Browse the local database                                                                                                                                           |
 | `npm run db:seed`                           | Create / reset the local demo users                                                                                                                                 |
+| `npm run perf:search`                       | Search speed check (NFR-PERF-001): 10,000 jobs, p95 per query; rolls back afterwards                                                                                |
 
 ## Contributing
 

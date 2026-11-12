@@ -231,32 +231,35 @@ enum SalaryPeriod {
 
 /// A job advert (docs/09 §3.6). Only PUBLISHED jobs of verified companies are visible (BR-JOB-001).
 model Job {
-  id              String          @id @db.Uuid
-  companyId       String          @map("company_id") @db.Uuid
+  id              String                   @id @db.Uuid
+  companyId       String                   @map("company_id") @db.Uuid
   title           String
   description     String
   requirements    String
   /// NULL only for REMOTE jobs (BR-JOB-010) – CHECK.
   location        String?
-  workMode        WorkMode        @map("work_mode")
-  jobType         JobType         @map("job_type")
-  experienceLevel ExperienceLevel @map("experience_level")
-  industryId      String          @map("industry_id") @db.Uuid
+  workMode        WorkMode                 @map("work_mode")
+  jobType         JobType                  @map("job_type")
+  experienceLevel ExperienceLevel          @map("experience_level")
+  industryId      String                   @map("industry_id") @db.Uuid
   /// Whole pounds; min <= max (BR-JOB-003) – CHECK.
-  salaryMin       Int             @map("salary_min")
-  salaryMax       Int             @map("salary_max")
-  salaryPeriod    SalaryPeriod    @default(YEAR) @map("salary_period")
-  currency        String          @default("GBP") @db.Char(3)
+  salaryMin       Int                      @map("salary_min")
+  salaryMax       Int                      @map("salary_max")
+  salaryPeriod    SalaryPeriod             @default(YEAR) @map("salary_period")
+  currency        String                   @default("GBP") @db.Char(3)
   /// End of the closing day (23:59:59 UTC). 1–90 days ahead at submit (BR-JOB-002, checked in code).
-  deadline        DateTime        @db.Timestamptz(3)
-  status          JobStatus       @default(DRAFT)
+  deadline        DateTime                 @db.Timestamptz(3)
+  status          JobStatus                @default(DRAFT)
   /// Shown to the employer; required when REJECTED or REMOVED (BR-JOB-008) – CHECK.
-  statusReason    String?         @map("status_reason")
-  submittedAt     DateTime?       @map("submitted_at") @db.Timestamptz(3)
-  publishedAt     DateTime?       @map("published_at") @db.Timestamptz(3)
-  closedAt        DateTime?       @map("closed_at") @db.Timestamptz(3)
-  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  statusReason    String?                  @map("status_reason")
+  submittedAt     DateTime?                @map("submitted_at") @db.Timestamptz(3)
+  publishedAt     DateTime?                @map("published_at") @db.Timestamptz(3)
+  closedAt        DateTime?                @map("closed_at") @db.Timestamptz(3)
+  /// Full-text search document, GENERATED ALWAYS … STORED in the database (migration
+  /// …_job_search_vector): title (A), requirements (B), description (C). Never written by the app.
+  searchVector    Unsupported("tsvector")? @default(dbgenerated("job_search_document(title, requirements, description)")) @map("search_vector")
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   company  Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
   industry Industry @relation(fields: [industryId], references: [id], onDelete: Restrict)

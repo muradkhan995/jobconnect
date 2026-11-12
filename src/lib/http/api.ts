@@ -53,6 +53,38 @@ export async function parseBody<T>(
   return parsed.data;
 }
 
+/** Runs a handler and turns any error into an RFC 9457 response with the request id. */
+async function withProblems(
+  requestId: string,
+  log: ReturnType<typeof requestLogger>,
+  run: () => Promise<Response>,
+): Promise<Response> {
+  try {
+    return await run();
+  } catch (err) {
+    if (err instanceof DomainError) {
+      return problemResponse(
+        problem({
+          status: err.status,
+          code: err.code,
+          title: err.message,
+          requestId,
+          errors: err.fieldErrors,
+        }),
+      );
+    }
+    log.error({ err }, "unhandled API error");
+    return problemResponse(
+      problem({
+        status: 500,
+        code: "INTERNAL_ERROR",
+        title: "Something went wrong. Please try again.",
+        requestId,
+      }),
+    );
+  }
+}
+
 /**
  * Wraps an API route handler with the checks every endpoint needs (API design §1–2):
  * session (401), role (403), and error → problem+json mapping with the request id.
@@ -67,7 +99,7 @@ export function apiRoute<P = Record<string, never>>(
   ): Promise<Response> => {
     const requestId = getRequestId(request.headers);
     const log = requestLogger(requestId);
-    try {
+    return withProblems(requestId, log, async () => {
       const session = await getAuth().api.getSession({
         headers: request.headers,
       });
@@ -88,29 +120,24 @@ export function apiRoute<P = Record<string, never>>(
         );
       }
       const params = await route.params;
-      return await handler({ request, requestId, log, params, user });
-    } catch (err) {
-      if (err instanceof DomainError) {
-        return problemResponse(
-          problem({
-            status: err.status,
-            code: err.code,
-            title: err.message,
-            requestId,
-            errors: err.fieldErrors,
-          }),
-        );
-      }
-      log.error({ err }, "unhandled API error");
-      return problemResponse(
-        problem({
-          status: 500,
-          code: "INTERNAL_ERROR",
-          title: "Something went wrong. Please try again.",
-          requestId,
-        }),
-      );
-    }
+      return handler({ request, requestId, log, params, user });
+    });
+  };
+}
+
+/** For endpoints anyone may call (e.g. public job search): same error format, no session. */
+export function publicRoute<P = Record<string, never>>(
+  handler: (ctx: ApiContext<P>) => Promise<Response>,
+) {
+  return async (
+    request: Request,
+    route: { params: Promise<P> },
+  ): Promise<Response> => {
+    const requestId = getRequestId(request.headers);
+    const log = requestLogger(requestId);
+    return withProblems(requestId, log, async () =>
+      handler({ request, requestId, log, params: await route.params }),
+    );
   };
 }
 

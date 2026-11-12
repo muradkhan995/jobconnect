@@ -40,7 +40,7 @@ Public (🌐)                     Candidate (C)                 Employer (E)    
 ```
 
 **Home after login:** candidate → `/jobs` · employer → `/employer` · admin → `/admin`.
-*As built:* candidates stay on `/` until job search (`/jobs`) exists in sprint S2 (D-19).
+*As built:* candidates land on `/jobs` (since S2, D-29).
 
 **Added during build:** `/employer/company` (create/edit the company profile, J1) and `/check-email`
 (shown after sign-up). Both are linked from the role navigation / sign-up flow.
@@ -256,7 +256,8 @@ Updated with every feature PR (see docs/00 §8 for endpoints).
 | J1 – Employer gets verified | `/employer`, `/employer/company` | ✅ Built (QA: docs/qa/…company-verification) |
 | J2 – Admin verifies company / approves job | `/admin`, `/admin/companies`, `/admin/companies/[id]`, `/admin/jobs`, `/admin/jobs/[id]` | ✅ Built |
 | J3 – Employer posts a job | `/employer/jobs`, `/employer/jobs/new`, `/employer/jobs/[id]`, `/employer/jobs/[id]/edit` | ✅ Built (QA: docs/qa/…jobs) |
-| J4 – Candidate finds and applies | `/jobs`, `/jobs/[id]`, apply sheet, `/candidate/*` | ⬜ Sprints S2–S3 |
+| J4 – Candidate finds a job | `/` (search box), `/jobs`, `/jobs/[id]` | ✅ Built (QA: docs/qa/…job-search) – works without JavaScript |
+| J4 – Candidate applies | apply sheet, `/candidate/*` | ⬜ Sprint S3 |
 | J5 – Employer reviews applicants | `/employer/jobs/[id]/applicants`, `/employer/applications/[id]` | ⬜ Sprint S4 |
 | Admin users, account deletion | `/admin/users*`, `/account` | ⬜ Sprint S5 |
 | Candidate mobile tab bar (§2.1) | – | ⬜ With candidate screens |

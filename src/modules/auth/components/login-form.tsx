@@ -1,21 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/modules/auth/messages";
-
-/** Only same-site paths, so a crafted ?next= link can't send people to another site. */
-function safeNext(next: string | null): string {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
-}
+import { safeNext } from "@/modules/auth/safe-next";
 
 export function LoginForm({ next }: { next: string | null }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -34,8 +28,9 @@ export function LoginForm({ next }: { next: string | null }) {
       setError(authErrorMessage(error));
       return;
     }
-    router.push(safeNext(next));
-    router.refresh();
+    // Full page load, not router.push + refresh: those two race, and the refresh could win and
+    // drop `next`. A fresh load also renders the header with the new session.
+    window.location.assign(safeNext(next));
   }
 
   return (

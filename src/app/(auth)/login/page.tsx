@@ -4,17 +4,19 @@ import { redirect } from "next/navigation";
 import { AuthCard } from "@/components/auth-card";
 import { Alert } from "@/components/ui/alert";
 import { LoginForm } from "@/modules/auth/components/login-form";
+import { safeNext } from "@/modules/auth/safe-next";
 import { getCurrentUser } from "@/modules/auth/session";
 
 export const metadata: Metadata = { title: "Log in · JobConnect" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
-  if (await getCurrentUser()) redirect("/");
   const params = await searchParams;
+  const next = typeof params["next"] === "string" ? params["next"] : null;
+  // Already logged in (e.g. right after this form succeeds): go where they were heading.
+  if (await getCurrentUser()) redirect(safeNext(next));
   const verified = params["verified"] === "1";
   const expired =
     params["error"] === "invalid_token" || params["error"] === "token_expired";
-  const next = typeof params["next"] === "string" ? params["next"] : null;
   return (
     <AuthCard
       title="Log in"
