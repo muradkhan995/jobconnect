@@ -48,6 +48,7 @@ model User {
 
   sessions Session[]
   accounts Account[]
+  company  Company?
 
   @@index([role, status])
   @@map("user")
@@ -113,6 +114,68 @@ model RateLimit {
   lastRequest BigInt @map("last_request")
 
   @@map("rate_limit")
+}
+
+/// Industries for companies and jobs (FR-ADM-014). Deactivated, never deleted (docs/09 §3.4).
+model Industry {
+  id        String   @id @db.Uuid
+  name      String   @unique
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  companies Company[]
+
+  @@map("industry")
+}
+
+enum CompanySize {
+  SIZE_1_10
+  SIZE_11_50
+  SIZE_51_200
+  SIZE_201_500
+  SIZE_500_PLUS
+
+  @@map("company_size")
+}
+
+/// Company verification lifecycle (BR §2).
+enum CompanyStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+
+  @@map("company_status")
+}
+
+/// One company per employer in this release (FR-EMP-005 is Won't) – docs/09 §3.5.
+model Company {
+  id                 String        @id @db.Uuid
+  /// NULL only after the owner's account is erased (BR-USR-004).
+  ownerUserId        String?       @unique @map("owner_user_id") @db.Uuid
+  name               String
+  description        String
+  industryId         String        @map("industry_id") @db.Uuid
+  size               CompanySize
+  website            String?
+  location           String
+  logoKey            String?       @map("logo_key")
+  verificationStatus CompanyStatus @default(PENDING) @map("verification_status")
+  /// Shown to the employer; required when REJECTED or SUSPENDED (BR-CMP-002) – CHECK.
+  statusReason       String?       @map("status_reason")
+  submittedAt        DateTime      @default(now()) @map("submitted_at") @db.Timestamptz(3)
+  verifiedAt         DateTime?     @map("verified_at") @db.Timestamptz(3)
+  /// Admin who verified it (also in the audit log). No FK: survives admin deletion.
+  verifiedBy         String?       @map("verified_by") @db.Uuid
+  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  owner    User?    @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  industry Industry @relation(fields: [industryId], references: [id], onDelete: Restrict)
+
+  @@index([verificationStatus, submittedAt])
+  @@map("company")
 }
 
 /// Append-only record of admin actions and security events (FR-ADM-019/021, docs/09 §3.10).

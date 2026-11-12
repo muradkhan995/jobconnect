@@ -19,8 +19,8 @@
 | 08 | Wrong password → generic error (doesn't say which part is wrong) | NFR-SEC | ✅ | [08](screenshots/08-login-wrong-password.png) |
 | 09–10 | Log in shows name + role; log out | FR-AUTH-007 | ✅ | [09](screenshots/09-logged-in-candidate.png) · [10](screenshots/10-logged-out.png) |
 | 11–14 | Forgot password → email → new password → log in with it | FR-AUTH-008 | ✅ | [11](screenshots/11-forgot-password-sent.png) · [12](screenshots/12-email-reset.png) · [13](screenshots/13-reset-password-form.png) · [14](screenshots/14-password-changed.png) |
-| 15 | Demo employer logs in | – | ✅ | [15](screenshots/15-demo-employer.png) |
-| 16 | Demo admin logs in | FR-ADM-001 | ✅ | [16](screenshots/16-demo-admin.png) |
+| 15 | Demo employer logs in and lands on `/employer` | – | ✅ | [15](screenshots/15-demo-employer.png) |
+| 16 | Demo admin logs in and lands on `/admin` | FR-ADM-001 | ✅ | [16](screenshots/16-demo-admin.png) |
 | 17 | Sign-up page at 360 px: no sideways scrolling | NFR-UX-001 | ✅ | [17](screenshots/17-register-mobile-360px.png) |
 | 18 | No Content Security Policy violations in a real browser | NFR-SEC-005 | ✅ | – |
 

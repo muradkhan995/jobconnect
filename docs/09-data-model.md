@@ -100,7 +100,7 @@ Education, employment history and skills (FR-CAN-002/003/004) are **Release 1.0*
 | name | text | UNIQUE |
 | is_active | boolean | default true – deactivated, never deleted, because jobs reference it (FR-ADM-014) |
 
-Seeded by a migration; editable by admins.
+Seeded by migration `…_companies` with 13 industries (fixed UUIDv7 ids); editable by admins later (FR-ADM-014).
 
 ### 3.5 `company`
 | Column | Type | Rules |
@@ -209,6 +209,8 @@ for rules where a bug or a race would cause real harm.
 | FR-CAN-005 file size | `CHECK` on `cv.size_bytes` |
 | Mandatory reasons (FR-ADM-006/008/010/011) | `CHECK (status NOT IN (…) OR status_reason IS NOT NULL)` |
 | One company per employer | `UNIQUE (owner_user_id)` |
+| Verified company records when (BR §2) | `CHECK (status <> 'VERIFIED' OR verified_at IS NOT NULL)` |
+| Company website is https | `CHECK (website IS NULL OR website ~ '^https://')` |
 | FR-ADM-021 audit append-only | Revoked `UPDATE`/`DELETE` + trigger |
 | Status lifecycles (BR §1–4) | Service transition table + **guarded update** (below) |
 

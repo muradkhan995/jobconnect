@@ -6,8 +6,8 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.0 |
-| Status | Current – reflects `main` at `cf3c387` (PR #11) |
+| Version | 1.1 |
+| Status | Current – reflects branch `feat/company-verification` (on top of `main` at `ca48cad`, PR #13) |
 | Phase | 3 – Build (MVP, release 0.1) |
 | Owner | Product Owner |
 | Last updated | 2026-11-12 |
@@ -41,15 +41,17 @@
 |---|---|
 | Phase 1 – Discovery (docs 01–07) | ✅ Complete |
 | Phase 2 – Design (docs 08–11) | ✅ Complete; 3 open questions (§14) |
-| Phase 3 – Build | 🟡 In progress – foundation + authentication done |
+| Phase 3 – Build | 🟡 In progress – foundation, authentication, company verification done |
 | `main` CI | ✅ Green (lint, types, unit, integration, build, audit, secret scan) |
 | Deployed | ❌ Not yet – runs locally only |
-| MVP core loop (docs/07 §2) | Step 0 of 5: users can register and log in; no companies, jobs or applications yet |
+| MVP core loop (docs/07 §2) | **Step 1 of 5 done**: employers create a company, admins verify it. No jobs or applications yet |
 
-**Working today:** sign up as candidate or employer, email confirmation, log in/out, password reset,
-demo accounts for every role, health check, audit log.
+**Working today:** sign up as candidate or employer, email confirmation, log in/out, password reset;
+employer company profile; admin verification queue with verify / reject (with reason) / suspend /
+reinstate and emails to the employer; role dashboards; demo accounts for every role; health check;
+audit log.
 
-**Next feature:** company profile + admin verification queue (core loop step 1).
+**Next feature:** jobs – create, submit, admin approval, publish (core loop step 2).
 
 ---
 
@@ -83,15 +85,18 @@ image, PostgreSQL for all state. Full design: [08-system-architecture](08-system
 ```
 Browser ──HTTPS──▶ Next.js app
                     │
-                    ├─ src/proxy.ts ─────── request id · CSRF origin check · per-request CSP nonce
+                    ├─ src/proxy.ts ─────── request id · CSRF origin check · CSP nonce · role gate for /admin, /employer
                     ├─ next.config.ts ───── static security headers (HSTS, nosniff, frame, referrer…)
                     │
                     ├─ src/app/ ─────────── pages (React Server Components) + route handlers
                     │    ├─ (auth)/…           register, login, check-email, forgot/reset password
+                    │    ├─ employer/…         employer dashboard, company profile
+                    │    ├─ admin/…            admin dashboard, company queue + review
                     │    ├─ api/auth/[...all]  Better Auth endpoints
+                    │    ├─ api/v1/…           JSON API (apiRoute wrapper: 401/403/400/problem+json)
                     │    └─ api/health         DB ping → 200 / 503
                     │
-                    ├─ src/modules/ ─────── business modules (auth, audit; more per feature)
+                    ├─ src/modules/ ─────── business modules (auth, audit, company; more per feature)
                     ├─ src/lib/ ─────────── db, auth, env, email, logger, security helpers
                     │
                     ├──▶ PostgreSQL 17 ─── data, sessions, rate limits, append-only audit log
@@ -137,13 +142,17 @@ proposes newer ones as pull requests, merged **only after CI on the PR is green*
 | `src/app/` | Pages and route handlers only – no business logic |
 | `src/modules/auth/` | Sign-up rules, password hashing, emails, error messages, session helper, auth forms |
 | `src/modules/audit/` | `recordAudit()` – typed actions, transaction-aware, rejects personal data |
+| `src/modules/company/` | Company schemas (Zod), lifecycle table (`rules.ts`), service (ownership, guarded updates, audit, emails), labels, form + decision components |
+| `src/lib/http/api.ts` | `apiRoute()` wrapper for every `/api/v1` endpoint: session, role, Zod body parsing, errors → RFC 9457 |
+| `src/lib/http/errors.ts` | `DomainError` + helpers (not found, forbidden role, invalid transition, state changed) |
+| `src/lib/client/api.ts` | Browser helper for calling the API and reading problem responses |
 | `src/lib/auth.ts` | Better Auth configuration (single place for all auth policy) |
 | `src/lib/db.ts` | Lazy, process-wide Prisma client |
 | `src/lib/env.ts` | Zod-validated environment (names only in errors, never values) |
 | `src/lib/security/` | CSP builder, CSRF origin check |
 | `src/lib/http/` | RFC 9457 problem responses, request id |
 | `src/lib/logger.ts`, `privacy.ts` | JSON logger; shared list of sensitive field names |
-| `src/components/` | Shared UI: button, text field, alert, auth card, site header |
+| `src/components/` | Shared UI: button, text/select/textarea fields, alert, status badge, auth card, site header (role nav) |
 | `prisma/` | Schema, migrations, demo-user seed |
 | `e2e/` | Playwright tests, helpers, global setup |
 | `docs/` | This document, discovery/design docs, QA reports |
@@ -170,19 +179,25 @@ Legend: ✅ done · 🟡 partial · ⬜ not started · ➖ not in MVP
 | FR-AUTH-008 Password reset, time-limited | ✅ | 1 h link, all sessions revoked; E2E 11–14 |
 | FR-AUTH-009 Temporary block after 5 failures (S) | 🟡 | Per-IP rate limit (10/min) only; no per-account lockout |
 | FR-ADM-001 Admin created only by script | 🟡 | Local demo seed only; production admin script ⬜ |
-| FR-ADM-019 Audit entries | 🟡 | Table + auth events done; admin actions come with admin features |
+| FR-ADM-019 Audit entries | 🟡 | Auth events + company decisions; more admin actions as they are built |
 | FR-ADM-021 Audit log can't be edited/deleted | ✅ | DB triggers; integration tests |
 | FR-CAN-001/005/006/007/008/010–013/017/018 | ⬜ | Candidate features |
-| FR-EMP-001/003/004/006–011/013–015/017/018 | ⬜ | Employer features |
-| FR-ADM-004–011, FR-ADM-014 | ⬜ | Admin features |
+| FR-EMP-001 Create company profile | ✅ | `/employer/company`; E2E 20–22 |
+| FR-EMP-003 Edit company | ✅ | Rejected → back to review; blocked while suspended |
+| FR-EMP-004 No jobs until verified | 🟡 | Company status in place; enforced when jobs are built |
+| FR-ADM-007 Company verification queue | ✅ | `/admin/companies`, oldest first; E2E 23–24 |
+| FR-ADM-008 Verify / reject with reason, employer notified | ✅ | Emails sent; E2E 25–31 |
+| FR-ADM-014 Industries | 🟡 | 13 seeded; admin editing ⬜ |
+| FR-EMP-006–011/013–015/017/018 | ⬜ | Jobs + applicant features |
+| FR-ADM-004–006, FR-ADM-009–011 | ⬜ | User management, job moderation |
 
 ### 6.2 Non-functional (Must unless marked)
 | Requirement | Status | Where / note |
 |---|---|---|
 | SEC-001 Argon2id / bcrypt | ✅ | `password.ts` |
 | SEC-002 HTTPS / TLS | 🟡 | HSTS header ready; needs deployment |
-| SEC-003 Server-side auth + ownership checks | 🟡 | Auth done; policy layer arrives with first business endpoints |
-| SEC-004 Input validation, parameterised queries | 🟡 | Prisma everywhere; Zod per endpoint as endpoints are added |
+| SEC-003 Server-side auth + ownership checks | ✅ | Proxy role gate + `apiRoute` role check + service ownership/role checks; tested per role |
+| SEC-004 Input validation, parameterised queries | ✅ | Zod on every `/api/v1` body; Prisma everywhere |
 | SEC-005 Output encoding + CSP | ✅ | Nonce CSP; real-browser check (E2E 18) |
 | SEC-006 Cookies + CSRF | ✅ | HttpOnly/Secure/SameSite; Origin check |
 | SEC-007 Rate limiting | ✅ | DB-backed; 10/min on auth endpoints |
@@ -202,7 +217,7 @@ Legend: ✅ done · 🟡 partial · ⬜ not started · ➖ not in MVP
 | MNT-001 TS strict + lint in CI | ✅ | |
 | MNT-002 PR + passing CI | 🟡 | Practised; **branch protection not enforced on GitHub** |
 | MNT-003 Tests per requirement (S) | 🟡 | Done for everything built so far |
-| MNT-004 OpenAPI (S) | ⬜ | With first `/api/v1` endpoints |
+| MNT-004 OpenAPI (S) | ⬜ | `/api/v1` exists; spec generation still to do |
 | UX-001 Responsive 360–1920 px | 🟡 | Auth pages checked at 360 px |
 | UX-002 WCAG 2.2 AA (S) | 🟡 | Labels, focus, live regions; no screen-reader audit yet |
 | UX-004 Latest 2 versions of 4 browsers | 🟡 | Chromium only |
@@ -217,6 +232,8 @@ hard delete + anonymise.
 | Table | Purpose | Migration |
 |---|---|---|
 | `user` | Account: role, status, consent, verification | `20261112001631_auth` |
+| `industry` | 13 seeded industries; deactivate, never delete | `20261112120548_companies` |
+| `company` | Employer's company + verification status, reason, verified-at/by | `…_companies` |
 | `session` | Opaque session tokens | `…_auth` |
 | `account` | Credentials (Argon2id hash) | `…_auth` |
 | `verification` | Email-verification / reset tokens | `…_auth` |
@@ -225,6 +242,8 @@ hard delete + anonymise.
 | *(extensions)* | `citext`, database timezone UTC | `20261111000000_init` |
 
 **Database-enforced rules:** unique email (case-insensitive) · suspension needs a reason ·
+one company per employer · rejected/suspended company needs a reason · verified company has a
+verified-at time · company website must be https ·
 audit log: no UPDATE/TRUNCATE, DELETE only after 24 months, timestamp set by DB, action-name format.
 
 **Deviation from docs/09:** "unverified" is `email_verified = false`, not a status value (D-10).
@@ -242,9 +261,15 @@ Design: [10-api-design](10-api-design.md), [11-ui-flows](11-ui-flows.md).
 | `POST /api/auth/request-password-reset` · `reset-password` | Password reset |
 | `GET /api/auth/get-session` | Current session |
 | `GET /api/health` | `200 {"status":"ok"}` / `503 {"status":"error"}` |
-| `/`, `/register`, `/check-email`, `/login`, `/forgot-password`, `/reset-password`, `/privacy` | Pages |
+| `GET /api/v1/industries` | Active industries (public) |
+| `GET · POST · PATCH /api/v1/employer/company` | Employer's own company |
+| `GET /api/v1/admin/companies?status=` · `GET /api/v1/admin/companies/{id}` | Admin queue and detail |
+| `POST /api/v1/admin/companies/{id}/verify · reject · suspend · reinstate` | Admin decisions (`reject`/`suspend` need `{ reason }`) |
+| `/`, `/register`, `/check-email`, `/login`, `/forgot-password`, `/reset-password`, `/privacy` | Public / auth pages |
+| `/employer`, `/employer/company` | Employer dashboard, company profile form |
+| `/admin`, `/admin/companies`, `/admin/companies/{id}` | Admin dashboard, queue, review |
 
-`/privacy` is a **placeholder** – real policy text is needed before launch. No `/api/v1` endpoints yet.
+`/privacy` is a **placeholder** – real policy text is needed before launch.
 
 ---
 
@@ -256,11 +281,14 @@ Design: [10-api-design](10-api-design.md), [11-ui-flows](11-ui-flows.md).
 | Sessions | DB sessions, `HttpOnly; SameSite=Lax`, `Secure` in production; revoked on password reset |
 | Account enumeration | Sign-up and password-reset responses identical whether or not the email exists |
 | CSRF | `Origin` must equal our origin on every unsafe `/api/*` request (403 problem+json) |
+| Authorisation | Three layers: proxy gates `/admin/*`, `/employer/*` (307 / 404 before rendering) · `apiRoute` checks session + role · services check role + ownership |
+| Not revealing other roles' pages | Wrong role gets the same `404` as a page that doesn't exist |
+| Concurrent edits | Guarded updates: a decision applies only if the status is still what the admin saw (`409 STATE_CHANGED`) |
 | XSS | Per-request nonce CSP, `strict-dynamic`, no `unsafe-inline` scripts in production |
 | Headers | HSTS (prod), nosniff, `X-Frame-Options: DENY`, Referrer-Policy, Permissions-Policy, COOP |
 | Rate limiting | 10/min on sign-in, sign-up, reset; 120/min default; stored in DB |
 | Suspended users | Cannot create sessions (checked on every login) |
-| Audit | Sign-up, login, failed login, reset-request, reset; append-only in DB |
+| Audit | Sign-up, login, failed login, reset-request, reset, company verified / rejected / suspended / reinstated; append-only in DB |
 | Logs | JSON, request id, sensitive keys redacted (also one level deep) |
 | Secrets | Env vars only; Zod-validated; gitleaks in CI; demo seed refuses non-local DBs |
 | Third parties | Better Auth telemetry **off**; HIBP receives only a hash prefix |
@@ -271,16 +299,18 @@ Design: [10-api-design](10-api-design.md), [11-ui-flows](11-ui-flows.md).
 
 | Layer | Tool | Count | Runs |
 |---|---|---|---|
-| Unit | Vitest | 64 | `npm test`, CI |
-| Integration (real Postgres + Mailpit) | Vitest | 21 | `npm run test:integration`, CI |
-| End-to-end (real browser, prod build) | Playwright | 11 | `npm run test:e2e`, **local only** |
+| Unit | Vitest | 77 | `npm test`, CI |
+| Integration (real Postgres + Mailpit) | Vitest | 35 | `npm run test:integration`, CI |
+| End-to-end (real browser, prod build) | Playwright | 16 | `npm run test:e2e`, **local only** |
 
 **CI pipeline** (`.github/workflows/ci.yml`, every PR and push to `main`):
 format → lint → typecheck → unit tests with coverage → build · migrations + schema-drift check +
 integration tests (Postgres 17, Mailpit) · `npm audit` + gitleaks secret scan.
 
-**QA reports:** [qa/2026-11-12-auth-qa-report.md](qa/2026-11-12-auth-qa-report.md) – authentication,
-11/11 passed, 17 screenshots, 2 product bugs found and fixed.
+**QA reports:**
+- [qa/2026-11-12-auth-qa-report.md](qa/2026-11-12-auth-qa-report.md) – authentication, 11/11 passed, 17 screenshots.
+- [qa/2026-11-12-company-verification-qa-report.md](qa/2026-11-12-company-verification-qa-report.md) – company
+  verification, 5/5 passed, 12 screenshots; found wrong status codes on role pages (fixed via proxy gate).
 
 ---
 
@@ -337,6 +367,11 @@ Product and implementation decisions:
 | D-12 | 2026-11-12 | Display name stored on `user` (required by Better Auth) | Dev |
 | D-13 | 2026-11-12 | E2E tests run against a production build without the external HIBP check | Dev |
 | D-14 | 2026-11-12 | Stay on TypeScript 5.9 until typescript-eslint supports TS 7 | Dev |
+| D-15 | 2026-11-12 | Build remaining MVP one feature per PR, pausing for review; deployment after features | PO |
+| D-16 | 2026-11-12 | Role areas are gated in the proxy before rendering (streamed pages can't change status after 200) | Dev |
+| D-17 | 2026-11-12 | Decision emails are best-effort after commit (failure logged, decision stands) until the worker exists | Dev |
+| D-18 | 2026-11-12 | Employers can edit a verified company without re-review; rejected → back to review; suspended → no edits | Dev |
+| D-19 | 2026-11-12 | Each role has its own home: `/employer`, `/admin`; candidates stay on `/` until job search exists | Dev |
 
 ---
 
@@ -346,6 +381,8 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
+| 2026-11-12 | *(open)* | Company profile + admin verification (core loop step 1): `industry`/`company` tables, `/api/v1` foundation, employer + admin screens, decision emails, proxy role gate, QA report |
+| 2026-11-12 | #13 | Software Solution Document, `CLAUDE.md` docs rule, PR template |
 | 2026-11-12 | #11 | Demo users (`db:seed`), Playwright E2E suite, auth QA report; fixed email link wrapping and admin home text |
 | 2026-11-12 | #10 | Reverted TypeScript 7 → 5.9 (lint crashed); Dependabot ignores TS majors |
 | 2026-11-12 | #8 | Dependabot: minor/patch updates (Better Auth 1.7.18, nodemailer 10.4, React 19.3.1, …) |
@@ -369,6 +406,7 @@ Newest first. One row per merged pull request.
 | Q3 | Brand / logo | PO |
 | Q4 | If the breach-check service (HIBP) is down: block sign-up (current) or allow with a warning? | PO |
 | Q5 | Enable GitHub branch protection (require PR + green CI on `main`)? | PO |
+| Q6 | Should editing a **verified** company's name or website send it back for review (fraud risk), as job edits do (BR-JOB-004)? Current: no (D-18) | PO |
 
 ### Known gaps and risks
 | Gap | Impact | Plan |
@@ -378,9 +416,11 @@ Newest first. One row per merged pull request.
 | Privacy policy is a placeholder | Launch blocker (GDPR) | Write before release |
 | Emails sent inline | Slow SMTP slows sign-up | pg-boss worker |
 | ESLint 10 vs `eslint-config-next` peer range | Lint may break on a future update | Watch Dependabot PRs |
+| Local `npm ci` while the dev server runs can leave a broken `node_modules` | Pages 500 locally | Stop `npm run dev` before reinstalling |
+| E2E data accumulates in the local DB (test companies) | Cluttered local queue | Acceptable locally; CI will use a fresh DB |
 
 ### Next steps (in order)
-1. Company profile + admin verification queue (FR-EMP-001/003/004, FR-ADM-007/008)
+1. ~~Company profile + admin verification queue~~ ✅
 2. Jobs: create, submit, approve, publish (FR-EMP-006–011, FR-ADM-009–011)
 3. Public job search and details (FR-CAN-006–008)
 4. Candidate profile, CV upload, apply, application history
