@@ -1,6 +1,6 @@
 import type { CompanyStatus } from "@/generated/prisma/enums";
 
-/** Plain-language status labels (docs/11 §5). */
+/** Plain-language status labels (docs/04-design/01-ui-flows.md §5). */
 export const COMPANY_STATUS_LABEL: Record<
   CompanyStatus,
   {

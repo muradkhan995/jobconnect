@@ -58,7 +58,7 @@ export function assertNoPersonalData(metadata: Record<string, unknown>): void {
 
 /**
  * Records one audit entry. Pass the transaction client of the action being audited so
- * both commit or fail together (docs/08 §5.1 step 5).
+ * both commit or fail together (docs/06-architecture/01-system-architecture.md §5.1 step 5).
  */
 export async function recordAudit(
   writer: AuditWriter,

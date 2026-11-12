@@ -7,7 +7,7 @@ import {
 } from "./db";
 import { login, shot } from "./helpers";
 
-// Core loop step 3 (docs/07 §2, docs/11 J4 first half): anyone finds and reads jobs.
+// Core loop step 3 (docs/02-product-strategy/06-mvp-definition.md §2, docs/04-design/01-ui-flows.md J4 first half): anyone finds and reads jobs.
 test.describe.configure({ mode: "serial" });
 test.beforeEach(resetRateLimits);
 

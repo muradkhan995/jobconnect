@@ -25,7 +25,7 @@ export const forbiddenRole = () =>
 export const invalidTransition = (message: string) =>
   new DomainError(409, "INVALID_TRANSITION", message);
 
-/** Someone else changed the record first (guarded update matched 0 rows, docs/09 §4). */
+/** Someone else changed the record first (guarded update matched 0 rows, docs/05-design/01-data-model.md §4). */
 export const stateChanged = () =>
   new DomainError(
     409,

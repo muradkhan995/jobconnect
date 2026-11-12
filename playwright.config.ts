@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * End-to-end tests in a real browser (MVP acceptance criteria, docs/07 §5).
+ * End-to-end tests in a real browser (MVP acceptance criteria, docs/02-product-strategy/06-mvp-definition.md §5).
  * Needs Postgres and Mailpit: `npm run db:up && npm run db:seed`, then `npm run test:e2e`.
  *
  * Runs against a production build on its own port, not the dev server: the dev server

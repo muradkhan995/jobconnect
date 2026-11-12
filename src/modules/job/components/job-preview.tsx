@@ -6,7 +6,7 @@ import {
 import { formatDeadline, formatSalary } from "@/modules/job/labels";
 import type { JobView } from "@/modules/job/service";
 
-/** A job exactly as candidates will see it (docs/11 §4.2). Used by admin review and job details. */
+/** A job exactly as candidates will see it (docs/04-design/01-ui-flows.md §4.2). Used by admin review and job details. */
 export function JobPreview({ job }: { job: JobView }) {
   const where = [job.location, WORK_MODE_LABEL[job.workMode]]
     .filter(Boolean)

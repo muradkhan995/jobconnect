@@ -17,7 +17,7 @@ export async function generateMetadata({
 }
 
 /**
- * Public job details (FR-CAN-008, docs/11 §4.2). A job that isn't visible never gets here:
+ * Public job details (FR-CAN-008, docs/04-design/01-ui-flows.md §4.2). A job that isn't visible never gets here:
  * the proxy answers 404 first (D-20); orNotFound is the second line of defence.
  */
 export default async function JobPage({ params }: PageProps<"/jobs/[id]">) {
@@ -35,7 +35,7 @@ export default async function JobPage({ params }: PageProps<"/jobs/[id]">) {
       <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 dark:border-zinc-800 dark:bg-zinc-950">
         <JobPreview job={job} />
       </div>
-      {/* Apply panel – sticky at the bottom on phones (docs/11 §4.2). Applying arrives in sprint S3. */}
+      {/* Apply panel – sticky at the bottom on phones (docs/04-design/01-ui-flows.md §4.2). Applying arrives in sprint S3. */}
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white p-4 sm:static sm:mt-6 sm:border-0 sm:bg-transparent sm:p-0 dark:border-zinc-800 dark:bg-zinc-950 sm:dark:bg-transparent">
         <div className="mx-auto max-w-3xl">
           {!user ? (

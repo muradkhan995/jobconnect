@@ -3,12 +3,13 @@
 A job marketplace that connects candidates with **verified employers** and shows every application's
 **real status** from submission to decision.
 
-Portfolio project built to production standard (UK/EU GDPR). Design documents live in [`docs/`](docs/).
+Portfolio project built to production standard (UK/EU GDPR). Documentation lives in [`docs/`](docs/) – start
+with the [documentation map](docs/README.md) and the [Software Solution Document](docs/00-solution-document.md).
 
 ## Tech stack
 
 Next.js (App Router) · TypeScript (strict) · Tailwind CSS · PostgreSQL + Prisma 7 · Zod · Vitest · GitHub Actions.
-See [`docs/08-system-architecture.md`](docs/08-system-architecture.md) for the full architecture.
+See [`docs/06-architecture/01-system-architecture.md`](docs/06-architecture/01-system-architecture.md) for the full architecture.
 
 ## Getting started
 
@@ -39,23 +40,24 @@ Emails the app sends locally (sign-up confirmation, password reset) land in **Ma
 
 ## Scripts
 
-| Command                                     | What it does                                                                                                                                                        |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                               | Start the dev server (stop it before `npm ci`)                                                                                                                      |
-| `npm run build` / `npm start`               | Production build / run it                                                                                                                                           |
-| `npm run lint`                              | ESLint (fails on any warning)                                                                                                                                       |
-| `npm run typecheck`                         | TypeScript check                                                                                                                                                    |
-| `npm run format` / `format:check`           | Prettier write / check                                                                                                                                              |
-| `npm test` / `test:watch` / `test:coverage` | Unit tests / watch mode / with coverage                                                                                                                             |
-| `npm run test:integration`                  | Integration tests against the local Postgres + Mailpit                                                                                                              |
-| `npm run test:e2e`                          | Browser tests (Playwright) against a production build; screenshots in `docs/qa/screenshots`. After a Playwright upgrade, run `npx playwright install chromium` once |
-| `npm run db:up` / `db:down`                 | Start / stop local Postgres + Mailpit                                                                                                                               |
-| `npm run db:migrate`                        | Create + apply a migration after changing `prisma/schema.prisma`, then regenerate the client                                                                        |
-| `npm run db:deploy`                         | Apply pending migrations (what production runs)                                                                                                                     |
-| `npm run db:generate`                       | Regenerate the Prisma client (also runs after `npm install`)                                                                                                        |
-| `npm run db:studio`                         | Browse the local database                                                                                                                                           |
-| `npm run db:seed`                           | Create / reset the local demo users                                                                                                                                 |
-| `npm run perf:search`                       | Search speed check (NFR-PERF-001): 10,000 jobs, p95 per query; rolls back afterwards                                                                                |
+| Command                                     | What it does                                                                                                                                                                           |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                               | Start the dev server (stop it before `npm ci`)                                                                                                                                         |
+| `npm run build` / `npm start`               | Production build / run it                                                                                                                                                              |
+| `npm run lint`                              | ESLint (fails on any warning)                                                                                                                                                          |
+| `npm run typecheck`                         | TypeScript check                                                                                                                                                                       |
+| `npm run format` / `format:check`           | Prettier write / check                                                                                                                                                                 |
+| `npm test` / `test:watch` / `test:coverage` | Unit tests / watch mode / with coverage                                                                                                                                                |
+| `npm run test:integration`                  | Integration tests against the local Postgres + Mailpit                                                                                                                                 |
+| `npm run test:e2e`                          | Browser tests (Playwright) against a production build; screenshots in `docs/08-testing/qa-reports/screenshots`. After a Playwright upgrade, run `npx playwright install chromium` once |
+| `npm run db:up` / `db:down`                 | Start / stop local Postgres + Mailpit                                                                                                                                                  |
+| `npm run db:migrate`                        | Create + apply a migration after changing `prisma/schema.prisma`, then regenerate the client                                                                                           |
+| `npm run db:deploy`                         | Apply pending migrations (what production runs)                                                                                                                                        |
+| `npm run db:generate`                       | Regenerate the Prisma client (also runs after `npm install`)                                                                                                                           |
+| `npm run db:studio`                         | Browse the local database                                                                                                                                                              |
+| `npm run db:seed`                           | Create / reset the local demo users                                                                                                                                                    |
+| `npm run perf:search`                       | Search speed check (NFR-PERF-001): 10,000 jobs, p95 per query; rolls back afterwards                                                                                                   |
+| `npm run docs:test-cases`                   | Regenerate `docs/08-testing/03-test-cases.md` from the test files                                                                                                                      |
 
 ## Contributing
 

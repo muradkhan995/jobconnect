@@ -9,7 +9,7 @@ const tones = {
     "bg-red-50 text-red-800 ring-red-300 dark:bg-red-950 dark:text-red-200 dark:ring-red-900",
 };
 
-/** Status shown as text, with colour only as a supporting cue (docs/11 P6). */
+/** Status shown as text, with colour only as a supporting cue (docs/04-design/01-ui-flows.md P6). */
 export function StatusBadge({
   tone,
   children,

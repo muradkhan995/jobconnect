@@ -11,9 +11,12 @@ Every change to the project must update the documentation **in the same branch /
    data model (§7), API/pages (§8), security (§9), tests/CI/QA (§10), environments (§11),
    decision log (§12), change log (§13, one row per PR), open questions/next steps (§14).
    Bump _Version_ and _Last updated_.
-2. **The numbered design doc the change belongs to** – e.g. new table → `docs/09-data-model.md`,
-   new endpoint → `docs/10-api-design.md`, new screen → `docs/11-ui-flows.md`, architecture decision →
-   ADR row in `docs/08-system-architecture.md`, requirement change → `docs/03`/`04`/`05`.
+2. **The document in `docs/` the change belongs to** (map: `docs/README.md`) – e.g. new table →
+   `05-design/01-data-model.md` (+ ER diagram), new endpoint → `05-design/02-api-design.md`, new screen →
+   `04-design/` (UI flows, screen inventory), new lifecycle → `05-design/03-state-diagrams.md`,
+   architecture decision → `06-architecture/03-adr-log.md`, requirement change → `03-requirements/`,
+   new test → `08-testing/03-test-cases.md`, UI text → `11-content/`, deploy/ops change → `09-deployment/`
+   / `10-operations/`, security/privacy change → `12-audit/`. Diagrams are Mermaid.
 3. **`README.md`** when setup, scripts or commands change.
 
 A change is not done until the docs describe it. Record decisions with their date and who made them
@@ -21,7 +24,7 @@ A change is not done until the docs describe it. Record decisions with their dat
 
 ## Working rules
 
-- Process, Definition of Ready and Definition of Done: `docs/12-agile-methodology.md`. A change is
+- Process, Definition of Ready and Definition of Done: `docs/07-implementation/01-agile-methodology.md`. A change is
   done only when it meets that Definition of Done.
 
 - Never commit to `main`; branch, push, open a PR, merge only when CI is green.

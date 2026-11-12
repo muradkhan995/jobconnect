@@ -136,7 +136,7 @@ export async function getMyJob(
   });
 }
 
-/** FR-EMP-006/007: a new DRAFT; drafts are allowed before the company is verified (docs/11 J3). */
+/** FR-EMP-006/007: a new DRAFT; drafts are allowed before the company is verified (docs/04-design/01-ui-flows.md J3). */
 export async function createJob(
   user: CurrentUser,
   input: JobInput,
@@ -177,7 +177,7 @@ export async function updateJob(
   }
   const next = statusAfterEdit(job.status, isMaterialChange(job, data));
   const { count } = await getDb().job.updateMany({
-    where: { id: job.id, status: job.status }, // guarded update (docs/09 §4)
+    where: { id: job.id, status: job.status }, // guarded update (docs/05-design/01-data-model.md §4)
     data: {
       ...data,
       status: next,

@@ -1,8 +1,8 @@
-# Local development services. Production uses managed services (docs/08-system-architecture.md §4).
+# Local development services. Production uses managed services (docs/06-architecture/01-system-architecture.md §4).
 # Object storage (S3) is added with the story that needs it.
 services:
   postgres:
-    # Keep the major version equal to production (Neon) – docs/09-data-model.md §7.
+    # Keep the major version equal to production (Neon) – docs/05-design/01-data-model.md §7.
     image: postgres:17-alpine
     environment:
       POSTGRES_USER: jobconnect

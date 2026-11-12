@@ -44,7 +44,7 @@ function createAuth() {
     telemetry: { enabled: false }, // NFR-PRV-001: no usage data leaves the app
 
     advanced: {
-      database: { generateId: () => uuidv7() }, // docs/09 §1
+      database: { generateId: () => uuidv7() }, // docs/05-design/01-data-model.md §1
       useSecureCookies: e.NODE_ENV === "production",
       cookiePrefix: "jobconnect",
     },

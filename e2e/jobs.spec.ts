@@ -3,7 +3,7 @@ import { DEMO_PASSWORD } from "../prisma/demo-users";
 import { TEST_PASSWORD, createVerifiedEmployer, resetRateLimits } from "./db";
 import { MAILPIT, login, shot, waitForEmail } from "./helpers";
 
-// Core loop step 2 (docs/07 §2, docs/11 J3): an employer posts a job, an admin approves it,
+// Core loop step 2 (docs/02-product-strategy/06-mvp-definition.md §2, docs/04-design/01-ui-flows.md J3): an employer posts a job, an admin approves it,
 // a material edit sends it back for approval, and the admin rejects it with a reason.
 test.describe.configure({ mode: "serial" });
 test.beforeEach(resetRateLimits);

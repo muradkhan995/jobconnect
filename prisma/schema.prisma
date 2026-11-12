@@ -1,4 +1,4 @@
-// JobConnect database schema – see docs/09-data-model.md.
+// JobConnect database schema – see docs/05-design/01-data-model.md.
 // Tables are added story by story; each change gets its own migration.
 
 generator client {
@@ -10,7 +10,7 @@ datasource db {
   provider = "postgresql"
 }
 
-/// Roles a user can have (docs/09-data-model.md §3.1). Also copied onto audit entries.
+/// Roles a user can have (docs/05-design/01-data-model.md §3.1). Also copied onto audit entries.
 enum UserRole {
   CANDIDATE
   EMPLOYER
@@ -29,7 +29,7 @@ enum UserStatus {
   @@map("user_status")
 }
 
-/// Better Auth core user + JobConnect fields (docs/09 §3.1). Field names follow Better Auth.
+/// Better Auth core user + JobConnect fields (docs/05-design/01-data-model.md §3.1). Field names follow Better Auth.
 model User {
   id                   String     @id @db.Uuid
   name                 String
@@ -116,7 +116,7 @@ model RateLimit {
   @@map("rate_limit")
 }
 
-/// Industries for companies and jobs (FR-ADM-014). Deactivated, never deleted (docs/09 §3.4).
+/// Industries for companies and jobs (FR-ADM-014). Deactivated, never deleted (docs/05-design/01-data-model.md §3.4).
 model Industry {
   id        String   @id @db.Uuid
   name      String   @unique
@@ -150,7 +150,7 @@ enum CompanyStatus {
   @@map("company_status")
 }
 
-/// One company per employer in this release (FR-EMP-005 is Won't) – docs/09 §3.5.
+/// One company per employer in this release (FR-EMP-005 is Won't) – docs/05-design/01-data-model.md §3.5.
 model Company {
   id                 String        @id @db.Uuid
   /// NULL only after the owner's account is erased (BR-USR-004).
@@ -229,7 +229,7 @@ enum SalaryPeriod {
   @@map("salary_period")
 }
 
-/// A job advert (docs/09 §3.6). Only PUBLISHED jobs of verified companies are visible (BR-JOB-001).
+/// A job advert (docs/05-design/01-data-model.md §3.6). Only PUBLISHED jobs of verified companies are visible (BR-JOB-001).
 model Job {
   id              String                   @id @db.Uuid
   companyId       String                   @map("company_id") @db.Uuid
@@ -268,7 +268,7 @@ model Job {
   @@map("job")
 }
 
-/// Append-only record of admin actions and security events (FR-ADM-019/021, docs/09 §3.10).
+/// Append-only record of admin actions and security events (FR-ADM-019/021, docs/05-design/01-data-model.md §3.10).
 /// No foreign keys on purpose: entries must survive user deletion and are never updated.
 /// The database rejects UPDATE/TRUNCATE, and DELETE of entries younger than 24 months
 /// (BR-AUD-001) – see the migration's triggers.

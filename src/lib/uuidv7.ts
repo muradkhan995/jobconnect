@@ -1,6 +1,6 @@
 /**
  * UUID version 7 (RFC 9562): 48-bit Unix-millisecond timestamp + 74 random bits.
- * Time-ordered, so B-tree indexes stay compact, and not guessable (docs/09 §1).
+ * Time-ordered, so B-tree indexes stay compact, and not guessable (docs/05-design/01-data-model.md §1).
  */
 export function uuidv7(now: number = Date.now()): string {
   const bytes = new Uint8Array(16);

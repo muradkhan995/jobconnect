@@ -12,7 +12,7 @@ import { jobSelect, type JobView } from "./service";
 
 /**
  * THE public visibility rule – defined once, used by search, job details and the proxy
- * (docs/09 §5): published (BR-JOB-001), not past its deadline, company verified
+ * (docs/05-design/01-data-model.md §5): published (BR-JOB-001), not past its deadline, company verified
  * (BR-CMP-003) and the company owner active (BR-USR-002).
  */
 export const VISIBLE_JOB = Prisma.sql`

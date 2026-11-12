@@ -8,7 +8,7 @@ const ROLE_LABEL = {
   ADMIN: "Admin",
 } as const;
 
-/** Main navigation per role (docs/11 §2.1). Grows as features land. */
+/** Main navigation per role (docs/04-design/01-ui-flows.md §2.1). Grows as features land. */
 const ROLE_NAV: Record<
   keyof typeof ROLE_LABEL,
   { href: string; label: string }[]
