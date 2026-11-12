@@ -21,6 +21,9 @@ A change is not done until the docs describe it. Record decisions with their dat
 
 ## Working rules
 
+- Process, Definition of Ready and Definition of Done: `docs/12-agile-methodology.md`. A change is
+  done only when it meets that Definition of Done.
+
 - Never commit to `main`; branch, push, open a PR, merge only when CI is green.
 - Run before committing: `npm run format:check && npm run lint && npm run typecheck && npm test`;
   for DB/auth changes also `npm run test:integration`; for UI flows `npm run test:e2e`.
