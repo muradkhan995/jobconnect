@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export const MAILPIT = "http://localhost:8025";
 
@@ -35,4 +35,13 @@ export async function linkFromEmail(id: string): Promise<string> {
   const url = Text.match(/https?:\/\/\S+/)?.[0];
   if (!url) throw new Error("No link in email");
   return url;
+}
+
+/** Logs in through the real login form and waits until we have left it. */
+export async function login(page: Page, email: string, password: string) {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page).not.toHaveURL(/\/login/);
 }

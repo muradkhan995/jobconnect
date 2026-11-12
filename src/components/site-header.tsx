@@ -8,14 +8,45 @@ const ROLE_LABEL = {
   ADMIN: "Admin",
 } as const;
 
+/** Main navigation per role (docs/11 §2.1). Grows as features land. */
+const ROLE_NAV: Record<
+  keyof typeof ROLE_LABEL,
+  { href: string; label: string }[]
+> = {
+  CANDIDATE: [],
+  EMPLOYER: [
+    { href: "/employer", label: "Dashboard" },
+    { href: "/employer/company", label: "Company" },
+  ],
+  ADMIN: [
+    { href: "/admin", label: "Dashboard" },
+    { href: "/admin/companies", label: "Companies" },
+  ],
+};
+
 export async function SiteHeader() {
   const user = await getCurrentUser();
   return (
     <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
-          JobConnect
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-lg font-semibold tracking-tight">
+            JobConnect
+          </Link>
+          {user && ROLE_NAV[user.role].length > 0 && (
+            <nav aria-label="Main" className="hidden gap-4 text-sm sm:flex">
+              {ROLE_NAV[user.role].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-zinc-700 hover:underline dark:text-zinc-300"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          )}
+        </div>
         <nav aria-label="Account" className="flex items-center gap-3 text-sm">
           {user ? (
             <>

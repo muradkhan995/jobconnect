@@ -63,7 +63,7 @@ All errors use **RFC 9457 Problem Details** (`Content-Type: application/problem+
 | 401 | `UNAUTHENTICATED` | No valid session |
 | 403 | `FORBIDDEN_ROLE`, `CSRF_ORIGIN_MISMATCH`, `ACCOUNT_SUSPENDED` | Wrong role / bad origin / suspended |
 | 404 | `NOT_FOUND` | Doesn't exist **or** not yours (§1.2) |
-| 409 | `ALREADY_APPLIED`, `INVALID_TRANSITION`, `STATE_CHANGED` | Business rule or a race lost (data model §4 guarded update) |
+| 409 | `ALREADY_APPLIED`, `COMPANY_EXISTS`, `INVALID_TRANSITION`, `STATE_CHANGED` | Business rule or a race lost (data model §4 guarded update) |
 | 413 | `FILE_TOO_LARGE` | Upload > limit |
 | 415 | `UNSUPPORTED_FILE_TYPE` | File content isn't PDF/DOCX (checked by magic bytes) |
 | 422 | `DEADLINE_PASSED`, `COMPANY_NOT_VERIFIED`, `CV_LIMIT_REACHED`, `DEADLINE_OUT_OF_RANGE` | Valid input, but a business rule blocks it |
@@ -118,7 +118,7 @@ Paths are Better Auth's defaults; we don't rename them. Signup role and consent 
 |---|---|---|---|
 | `GET /jobs` | 🌐 | FR-CAN-006/007, NFR-PERF-001 | Query: `q`, `location`, `workMode` (repeatable), `jobType` (repeatable), `cursor`, `limit`. Returns visible jobs only (data model §5) |
 | `GET /jobs/{jobId}` | 🌐 | FR-CAN-008 | `404` if not visible – a paused or removed job looks the same as a missing one |
-| `GET /industries` | 🌐 | – | Active industries, for filters and forms |
+| `GET /industries` | 🌐 | – | Active industries, for filters and forms. ✅ built |
 
 ### 4.5 Applications – candidate – `/api/v1/candidate/applications`
 | Method & path | Role | Requirement | Notes |
@@ -130,9 +130,9 @@ Paths are Better Auth's defaults; we don't rename them. Signup role and consent 
 ### 4.6 Company – employer – `/api/v1/employer/company`
 | Method & path | Role | Requirement | Notes |
 |---|---|---|---|
-| `GET /employer/company` | E | FR-EMP-001 | `404` if not created yet |
-| `POST /employer/company` | E | FR-EMP-001 | Creates it in `PENDING`; `409` if one exists |
-| `PATCH /employer/company` | E | FR-EMP-003 | Editing a `REJECTED` company sends it back to `PENDING` (BR §2) |
+| `GET /employer/company` | E | FR-EMP-001 | `404` if not created yet. ✅ built |
+| `POST /employer/company` | E | FR-EMP-001 | Creates it in `PENDING`; `409 COMPANY_EXISTS` if one exists. ✅ built |
+| `PATCH /employer/company` | E | FR-EMP-003 | Full profile (same body as POST). Editing a `REJECTED` company sends it back to `PENDING` (BR §2); `409` while `SUSPENDED`. ✅ built |
 
 ### 4.7 Jobs – employer – `/api/v1/employer/jobs`
 | Method & path | Role | Requirement | Notes |
@@ -167,11 +167,11 @@ All admin endpoints: role A only; every write is ✍️ and requires a `reason` 
 | `POST /admin/users/{id}/suspend` | FR-ADM-006, BR-USR-002 | Body `{ reason }`; ends their sessions ✍️ |
 | `POST /admin/users/{id}/reactivate` | FR-ADM-006 | ✍️ |
 | `POST /admin/users/{id}/erase` | BR-USR-004 | Employer deletion requested via support; body `{ reason }`; closes open jobs, queues erasure ✍️ |
-| `GET /admin/companies?status=PENDING` | FR-ADM-007 | Oldest first (the queue) |
-| `GET /admin/companies/{id}` | FR-ADM-008 | |
-| `POST /admin/companies/{id}/verify` | FR-ADM-008 | ✍️ |
-| `POST /admin/companies/{id}/reject` | FR-ADM-008, BR-CMP-002 | Body `{ reason }` ✍️ |
-| `POST /admin/companies/{id}/suspend` · `/reinstate` | BR-CMP-002/003 | `suspend` needs `{ reason }` ✍️ |
+| `GET /admin/companies?status=PENDING` | FR-ADM-007 | Oldest first (the queue); max 100. ✅ built |
+| `GET /admin/companies/{id}` | FR-ADM-008 | Includes owner name + email. ✅ built |
+| `POST /admin/companies/{id}/verify` | FR-ADM-008 | Employer emailed. ✅ built ✍️ |
+| `POST /admin/companies/{id}/reject` | FR-ADM-008, BR-CMP-002 | Body `{ reason }` (10–1000 chars); employer emailed with it. ✅ built ✍️ |
+| `POST /admin/companies/{id}/suspend` · `/reinstate` | BR-CMP-002/003 | `suspend` needs `{ reason }`. ✅ built ✍️ |
 | `GET /admin/jobs?status=PENDING_APPROVAL` | FR-ADM-009 | Oldest first |
 | `GET /admin/jobs/{id}` | FR-ADM-010 | |
 | `POST /admin/jobs/{id}/approve` | FR-ADM-010 | ✍️ |

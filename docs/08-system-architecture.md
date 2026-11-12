@@ -128,6 +128,9 @@ Render, Railway or a small VPS can replace any of them without code changes (R-1
 1. Browser sends a request with an `HttpOnly; Secure; SameSite=Lax` session cookie.
 2. The Next.js proxy (`src/proxy.ts`, formerly "middleware") adds a request ID and a per-request
    nonce CSP; static security headers (HSTS, nosniff, frame and referrer policies) come from `next.config.ts`.
+   For the role areas `/admin/*` and `/employer/*` the proxy also checks the session **before any
+   HTML is streamed**: no session → `307` to `/login?next=…`; wrong role → `404`. (A check inside a
+   streamed page can only change the status after `200` has been sent.) Pages and the API check again.
 3. On state-changing requests, the `Origin` header is checked against our domain (CSRF protection,
    alongside SameSite cookies).
 4. Route handler validates input with Zod → service → **policy check** → repository.

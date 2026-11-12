@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { DEMO_PASSWORD } from "../prisma/demo-users";
+import { resetRateLimits } from "./db";
 import { MAILPIT, linkFromEmail, shot, waitForEmail } from "./helpers";
 
 // One user journey, step by step: FR-AUTH-001..008 (docs/11 J1/J4 entry points).
 test.describe.configure({ mode: "serial" });
+test.beforeEach(resetRateLimits);
 
 const run = Date.now();
 const email = `qa-${run}@example.com`;
@@ -129,21 +131,22 @@ test("11–14 reset a forgotten password (FR-AUTH-008)", async ({ page }) => {
   ).toBeVisible();
 });
 
-for (const [n, who, label, firstName, nextStep] of [
-  ["15", "employer", "David Okafor · Employer", "David", "post jobs"],
-  ["16", "admin", "Sophie Clarke · Admin", "Sophie", "verify companies"],
+for (const [n, who, label, firstName, home] of [
+  ["15", "employer", "David Okafor · Employer", "David", "/employer"],
+  ["16", "admin", "Sophie Clarke · Admin", "Sophie", "/admin"],
 ] as const) {
-  test(`${n} demo ${who} can log in`, async ({ page }) => {
+  test(`${n} demo ${who} can log in and lands on their own home`, async ({
+    page,
+  }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(`${who}@demo.jobconnect.local`);
     await page.getByLabel("Password").fill(DEMO_PASSWORD);
     await page.getByRole("button", { name: "Log in" }).click();
+    await expect(page).toHaveURL(new RegExp(`${home}$`));
     await expect(page.getByText(label)).toBeVisible();
-    // Wait for the page body too, not just the header, before taking the screenshot.
     await expect(
       page.getByRole("heading", { name: `Welcome, ${firstName}` }),
     ).toBeVisible();
-    await expect(page.getByRole("main")).toContainText(nextStep);
     await shot(page, `${n}-demo-${who}`);
   });
 }

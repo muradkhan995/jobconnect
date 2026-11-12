@@ -1,14 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/modules/auth/session";
 
 const NEXT_STEP = {
   CANDIDATE: "Next you'll be able to search jobs and track every application.",
-  EMPLOYER: "Next you'll be able to create your company profile and post jobs.",
-  ADMIN: "Next you'll be able to verify companies and approve job adverts.",
 } as const;
 
 export default async function Home() {
   const user = await getCurrentUser();
+  // Each role has its own home (docs/11 §2). Candidates get /jobs once search exists.
+  if (user?.role === "EMPLOYER") redirect("/employer");
+  if (user?.role === "ADMIN") redirect("/admin");
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center gap-6 px-4 py-16">
       {user ? (
@@ -17,7 +19,7 @@ export default async function Home() {
             Welcome, {user.name.split(" ")[0]}
           </h1>
           <p className="max-w-xl text-lg text-zinc-600 dark:text-zinc-400">
-            {NEXT_STEP[user.role]}
+            {NEXT_STEP.CANDIDATE}
           </p>
         </>
       ) : (
