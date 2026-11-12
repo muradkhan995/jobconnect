@@ -120,6 +120,11 @@ Seeded by migration `…_companies` with 13 industries (fixed UUIDv7 ids); edita
 | verified_at / verified_by | timestamptz / uuid | Who approved it (also in audit log) |
 
 ### 3.6 `job`
+> **As built (migration `20261112134056_jobs`, sprint S1):** all columns below except `search_vector`.
+> Extra CHECKs: title 3–120 chars, currency = GBP, published job has `published_at`. Indexes:
+> `(company_id, created_at DESC)`, partial `job_pending_queue_idx (submitted_at) WHERE status = 'PENDING_APPROVAL'`
+> (admin queue, FR-ADM-009), partial `job_published_idx (published_at DESC) WHERE status = 'PUBLISHED'`.
+
 | Column | Type | Rules |
 |---|---|---|
 | id | uuid PK | |
@@ -135,11 +140,11 @@ Seeded by migration `…_companies` with 13 industries (fixed UUIDv7 ids); edita
 | salary_min / salary_max | integer | NOT NULL; CHECK `0 <= salary_min <= salary_max` (BR-JOB-003) |
 | salary_period | enum `salary_period` | YEAR, DAY, HOUR – default YEAR |
 | currency | char(3) | default `GBP` |
-| deadline | timestamptz | NOT NULL (the 1–90 day window is checked in the service at submit time, because a CHECK constraint can't compare against "now" reliably) |
+| deadline | timestamptz | NOT NULL. Stored as the **end of the chosen day, 23:59:59 UTC** (D-21). The 1–90 day window is checked in the service at submit time, because a CHECK constraint can't compare against "now" reliably |
 | status | enum `job_status` | DRAFT, PENDING_APPROVAL, PUBLISHED, PAUSED, REJECTED, CLOSED, REMOVED (BR §3) |
 | status_reason | text | Required when REJECTED or REMOVED (FR-ADM-010/011, BR-JOB-008) – CHECK |
 | submitted_at / published_at / closed_at | timestamptz | Lifecycle timestamps |
-| search_vector | tsvector | **Generated column** from title (weight A), requirements (B), description (C) |
+| search_vector | tsvector | **Generated column** from title (weight A), requirements (B), description (C). *Not built yet – added with search in sprint S2* |
 
 ### 3.7 `application`
 | Column | Type | Rules |
@@ -223,7 +228,7 @@ overwriting. This stops two tabs (or an employer and a withdrawing candidate) fr
 
 | # | Query | Frequency | Index |
 |---|---|---|---|
-| Q1 | **Job search**: published, deadline in future, company visible, keyword, location, work mode, job type; newest first; paginated | Very high | `GIN (search_vector)`; partial `(published_at DESC) WHERE status = 'PUBLISHED'` |
+| Q1 | **Job search**: published, deadline in future, company visible, keyword, location, work mode, job type; newest first; paginated | Very high | `GIN (search_vector)` (S2); partial `(published_at DESC) WHERE status = 'PUBLISHED'` ✅ built (`job_published_idx`) |
 | Q2 | Candidate's application history (FR-CAN-013) | High | `(candidate_id, applied_at DESC)` |
 | Q3 | Applicants for one job (FR-EMP-014) | High | `UNIQUE (job_id, candidate_id)` covers `job_id` lookups; add `(job_id, applied_at DESC)` |
 | Q4 | Employer's jobs with application counts (FR-EMP-013) | Medium | `(company_id, created_at DESC)` on job; counts via `GROUP BY job_id` on Q3's index |

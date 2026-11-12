@@ -63,5 +63,7 @@
 | R-11 | Over-engineering (building for problems we don't have) | M | M | 🟠 4 | XP "simple design" and YAGNI; review at retrospectives | Dev |
 | R-12 | Data loss (database failure) | L | H | 🟠 3 | Daily backups, tested restores (NFR-REL-002) | Dev |
 | R-13 | Third-party service outage or lock-in | L | M | 🟢 2 | Wrap external services behind our own interfaces | Dev |
+| R-14 | Automated dependency update breaks the build (happened: TypeScript 7, PR #4 → #10) | M | M | 🟠 4 | Merge Dependabot PRs only when CI is green; ignore risky majors; branch protection (Q5) | Dev |
+| R-15 | Framework behaviour limits correctness (Next.js streaming keeps HTTP 200 for in-page 404s) | M | L | 🟢 2 | Gate role areas in the proxy; API is the security boundary; real 404 for public pages (D-16, D-20) | Dev |
 
 **Review cadence:** 🔴 risks are reviewed at every sprint retrospective.

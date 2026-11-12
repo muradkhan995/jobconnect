@@ -68,6 +68,9 @@ FR-AUTH-001 to FR-AUTH-008 (registration, verification, login, logout, password 
 All AI agents · all Could (C) items · everything in Scope A3 (Out of Scope).
 
 ## 5. MVP Acceptance Criteria (Definition of "MVP Done")
+
+> **Progress (2026-11-12):** core loop steps 1–2 of 5 built and covered by E2E tests (companies verified,
+> jobs approved). CI is green on `main`. Not yet deployed. Live status: docs/00 §1 and §6.
 - [ ] The full core loop runs as an automated end-to-end test (Playwright).
 - [ ] An employer cannot see another company's applicants (automated test).
 - [ ] A candidate cannot see another candidate's applications (automated test).

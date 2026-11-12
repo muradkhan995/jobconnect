@@ -410,7 +410,7 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
-| 2026-11-12 | *(open)* | Jobs – sprint S1 (core loop step 2): `job` table, employer job pages + lifecycle, admin approval queue, decision emails, shared action panel, QA report |
+| 2026-11-12 | *(open)* | Jobs – sprint S1 (core loop step 2): `job` table, employer job pages + lifecycle, admin approval queue, decision emails, shared action panel, QA report. Docs synced: 06 (risks R-14/R-15), 07 (progress), 09 (job as built), 10 (endpoints), 11 (build status), 12 (backlog), README (all scripts) |
 | 2026-11-12 | *(open)* | Agile methodology document (docs/12): Scrum + XP for a solo developer, DoR/DoD, backlog epics E0–E10, sprint plan S1–S6 |
 | 2026-11-12 | *(open)* | Company profile + admin verification (core loop step 1): `industry`/`company` tables, `/api/v1` foundation, employer + admin screens, decision emails, proxy role gate, QA report |
 | 2026-11-12 | #13 | Software Solution Document, `CLAUDE.md` docs rule, PR template |
