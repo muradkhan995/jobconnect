@@ -2,6 +2,9 @@
 
 > Start with the **[Software Solution Document](00-solution-document.md)**: live status, what is built,
 > every decision and change. This page is the map of everything else.
+>
+> **Want to see it working?** The **[step-by-step system walkthrough](04-design/07-system-walkthrough.md)** shows
+> every flow in 62 real screenshots.
 
 Diagrams are written in [Mermaid](https://mermaid.js.org/) and render directly on GitHub.
 Anything not built yet is marked **planned**.
@@ -24,7 +27,7 @@ flowchart LR
 | [01-overview](01-overview/) | What is JobConnect, in one page? | [Project overview](01-overview/01-project-overview.md) · [Glossary](01-overview/02-glossary.md) |
 | [02-product-strategy](02-product-strategy/) | Why build it, for whom, and in what order? | [Vision](02-product-strategy/01-vision.md) · [Personas](02-product-strategy/02-personas.md) · [User journeys](02-product-strategy/03-user-journeys.md) · [Value proposition](02-product-strategy/04-value-proposition.md) · [Scope & risks](02-product-strategy/05-scope-and-risks.md) · [MVP](02-product-strategy/06-mvp-definition.md) · [Roadmap & KPIs](02-product-strategy/07-roadmap-and-kpis.md) |
 | [03-requirements](03-requirements/) | What must it do? | [Functional](03-requirements/01-functional-requirements.md) · [Non-functional](03-requirements/02-non-functional-requirements.md) · [Business rules](03-requirements/03-business-rules.md) · [Use cases](03-requirements/04-use-cases.md) · [User stories](03-requirements/05-user-stories.md) · [Traceability](03-requirements/06-traceability-matrix.md) |
-| [04-design](04-design/) | How does it look and flow? (UX/UI) | [UI flows](04-design/01-ui-flows.md) · [Sitemap & navigation](04-design/02-sitemap-and-navigation.md) · [User-flow diagrams](04-design/03-user-flow-diagrams.md) · [Screen inventory](04-design/04-screen-inventory.md) · [Design system](04-design/05-design-system.md) · [Accessibility](04-design/06-accessibility.md) |
+| [04-design](04-design/) | How does it look and flow? (UX/UI) | [UI flows](04-design/01-ui-flows.md) · [Sitemap & navigation](04-design/02-sitemap-and-navigation.md) · [User-flow diagrams](04-design/03-user-flow-diagrams.md) · [Screen inventory](04-design/04-screen-inventory.md) · [Design system](04-design/05-design-system.md) · [Accessibility](04-design/06-accessibility.md) · [**System walkthrough (screenshots)**](04-design/07-system-walkthrough.md) |
 | [05-design](05-design/) | How does it work inside? (technical) | [Data model](05-design/01-data-model.md) · [API](05-design/02-api-design.md) · [State diagrams](05-design/03-state-diagrams.md) · [Sequence diagrams](05-design/04-sequence-diagrams.md) · [ER diagram](05-design/05-er-diagram.md) · [Security design](05-design/06-security-design.md) |
 | [06-architecture](06-architecture/) | How is it structured and why? | [System architecture](06-architecture/01-system-architecture.md) · [C4 diagrams](06-architecture/02-c4-diagrams.md) · [ADR log](06-architecture/03-adr-log.md) · [Technology stack](06-architecture/04-technology-stack.md) |
 | [07-implementation](07-implementation/) | How do we build it? | [Agile methodology](07-implementation/01-agile-methodology.md) · [Codebase structure](07-implementation/02-codebase-structure.md) · [Coding standards](07-implementation/03-coding-standards.md) · [Development workflow](07-implementation/04-development-workflow.md) · [Adding a feature](07-implementation/05-feature-guide.md) |
