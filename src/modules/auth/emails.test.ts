@@ -20,6 +20,11 @@ describe("auth emails", () => {
     expect(e.html).toContain(escapeHtml(url));
   });
 
+  it("wraps the long fallback link so the email never scrolls sideways on phones", () => {
+    const e = verificationEmail("a@x.com", "A", "https://x/" + "t".repeat(300));
+    expect(e.html).toMatch(/word-break:break-all[^>]*>Or paste this link/);
+  });
+
   it("states the expiry times from the requirements", () => {
     expect(verificationEmail("a@x.com", "A", "u").text).toContain("24 hours"); // FR-AUTH-005
     expect(resetPasswordEmail("a@x.com", "A", "u").text).toContain("1 hour"); // FR-AUTH-008

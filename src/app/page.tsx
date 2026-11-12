@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/modules/auth/session";
 
+const NEXT_STEP = {
+  CANDIDATE: "Next you'll be able to search jobs and track every application.",
+  EMPLOYER: "Next you'll be able to create your company profile and post jobs.",
+  ADMIN: "Next you'll be able to verify companies and approve job adverts.",
+} as const;
+
 export default async function Home() {
   const user = await getCurrentUser();
   return (
@@ -11,9 +17,7 @@ export default async function Home() {
             Welcome, {user.name.split(" ")[0]}
           </h1>
           <p className="max-w-xl text-lg text-zinc-600 dark:text-zinc-400">
-            {user.role === "EMPLOYER"
-              ? "Next you'll be able to create your company profile and post jobs."
-              : "Next you'll be able to search jobs and track every application."}
+            {NEXT_STEP[user.role]}
           </p>
         </>
       ) : (

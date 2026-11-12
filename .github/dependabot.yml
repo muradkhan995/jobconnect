@@ -12,6 +12,10 @@ updates:
       # Types must match the Node runtime in .nvmrc (22); bump both together by hand.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # typescript-eslint (used by eslint-config-next) does not support TypeScript 7 yet:
+      # TS 7 makes `npm run lint` crash. Upgrade by hand once it does.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
