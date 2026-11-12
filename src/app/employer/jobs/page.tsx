@@ -54,6 +54,9 @@ export default async function EmployerJobs() {
                   Status
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium">
+                  Applications
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium">
                   Closes
                 </th>
                 <th scope="col" className="px-4 py-3">
@@ -73,6 +76,7 @@ export default async function EmployerJobs() {
                       {JOB_STATUS_LABEL[j.status].employer}
                     </StatusBadge>
                   </td>
+                  <td className="px-4 py-3">{j._count.applications}</td>
                   <td className="px-4 py-3">{formatDeadline(j.deadline)}</td>
                   <td className="px-4 py-3 text-right">
                     <Link

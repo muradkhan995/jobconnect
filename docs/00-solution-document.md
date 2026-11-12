@@ -6,8 +6,8 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.5 |
-| Status | Current – reflects branch `feat/job-search` (on top of `main` at `2ffb7af`, PR #17) |
+| Version | 1.6 |
+| Status | Current – reflects branch `feat/candidate-apply` (on top of `main` at `143149a`, PR #19, + fix `1e1a2df`) |
 | Phase | 3 – Build (MVP, release 0.1) |
 | Owner | Product Owner |
 | Last updated | 2026-11-12 |
@@ -41,10 +41,10 @@
 |---|---|
 | Phase 1 – Discovery (docs 01–07) | ✅ Complete |
 | Phase 2 – Design (docs 08–11) | ✅ Complete; 3 open questions (§14) |
-| Phase 3 – Build | 🟡 In progress – foundation, authentication, company verification, jobs (S1), public job search (S2) done |
+| Phase 3 – Build | 🟡 In progress – foundation, auth, company verification, jobs (S1), search (S2), profile/CVs/applying (S3) done |
 | `main` CI | ✅ Green (lint, types, unit, integration, build, audit, secret scan) |
 | Deployed | ❌ Not yet – runs locally only |
-| MVP core loop (docs/02-product-strategy/06-mvp-definition.md §2) | **Steps 1–3 of 5 partly done**: companies verified; jobs approved and published; anyone can search and read jobs. Candidates can't apply yet |
+| MVP core loop (docs/02-product-strategy/06-mvp-definition.md §2) | **Steps 1–3 of 5 done**: companies verified; jobs approved; candidates search, apply with a CV and see status. Employers can't review applicants yet (S4) |
 
 **Working today:** sign up as candidate or employer, email confirmation, log in/out, password reset;
 employer company profile; admin verification queue with verify / reject (with reason) / suspend /
@@ -53,7 +53,11 @@ approve / reject / remove (with reasons); emails to the employer for every decis
 search** (keyword, location, work mode, job type, newest first, "Load more") and **job details** with
 "Log in to apply"; role dashboards; demo accounts for every role; health check; audit log.
 
-**Next feature:** candidate profile, CV upload and applying (sprint S3, rest of core loop step 3).
+Candidates also have a **profile with up to 5 CVs** (type checked from content, private storage, 5-minute
+download links), **apply in two clicks** with a CV snapshot, see **My applications** with a status timeline,
+and get a **bottom tab bar on phones**; employers see application counts.
+
+**Next feature:** applicant management for employers (sprint S4, core loop steps 4–5).
 
 ---
 
@@ -190,7 +194,11 @@ Legend: ✅ done · 🟡 partial · ⬜ not started · ➖ not in MVP
 | FR-CAN-006 Keyword search | ✅ | Postgres full-text (stemming, title weighted highest); E2E 60–61 |
 | FR-CAN-007 Filters (MVP: location, work mode, job type) | ✅ | E2E 62–63; salary/experience/industry filters in Release 1.0 |
 | FR-CAN-008 Job details | ✅ | `/jobs/{id}`; E2E 65–66 |
-| FR-CAN-001/005/010–013/017/018 | ⬜ | Candidate profile, CVs, applying, account |
+| FR-CAN-001 Profile | ✅ | `/candidate/profile`; E2E 80–81 |
+| FR-CAN-005 CVs (≤ 5, PDF/DOCX by content, ≤ 5 MB) | ✅ | `cv-file.ts`, private storage; int (5-CV race); E2E 82–83 |
+| FR-CAN-010/011/012 Apply (once, before deadline, snapshot) | ✅ | int (race, snapshot); E2E 84–86 |
+| FR-CAN-013 Application history with status | ✅ | E2E 85, 87; candidate privacy E2E 88 |
+| FR-CAN-017/018 | ⬜ | Account settings, deletion (S5) |
 | FR-EMP-001 Create company profile | ✅ | `/employer/company`; E2E 20–22 |
 | FR-EMP-003 Edit company | ✅ | Rejected → back to review; blocked while suspended |
 | FR-EMP-004 No jobs until verified | ✅ | Drafts allowed; submit/resume/approve require a VERIFIED company |
@@ -200,7 +208,7 @@ Legend: ✅ done · 🟡 partial · ⬜ not started · ➖ not in MVP
 | FR-EMP-009 Edit own jobs (material edit → re-approval) | ✅ | BR-JOB-004/005; E2E 50 |
 | FR-EMP-010 Pause / resume | ✅ | Integration tests |
 | FR-EMP-011 Close (final) | ✅ | Integration tests |
-| FR-EMP-013 Jobs list with application counts | 🟡 | List done; counts arrive with applications |
+| FR-EMP-013 Jobs list with application counts | ✅ | E2E 89 |
 | FR-ADM-009 Job approval queue | ✅ | `/admin/jobs`, oldest first; E2E 46 |
 | FR-ADM-010 Approve / reject with reason, employer notified | ✅ | E2E 47–52 |
 | FR-ADM-011 Remove a job with reason | ✅ | Integration tests |
@@ -221,7 +229,7 @@ Legend: ✅ done · 🟡 partial · ⬜ not started · ➖ not in MVP
 | SEC-006 Cookies + CSRF | ✅ | HttpOnly/Secure/SameSite; Origin check |
 | SEC-007 Rate limiting | 🟡 | DB-backed 10/min on auth endpoints ✅; the 120/min general limit for public `/api/v1/jobs` (API design §5) ⬜ |
 | PERF-001 Search < 500 ms p95 @ 10k jobs (S) | ✅ | `npm run perf:search`: every query p95 < 10 ms (keyword 4.5 ms) |
-| SEC-008 Private files, signed URLs | ⬜ | With CV upload |
+| SEC-008 Private files, signed URLs | ✅ | Random keys, ownership check, 5-min links (expiry enforced by R2 – verify in S6; s3mock doesn't check signatures) |
 | SEC-009 Malware scan (S) | ⬜ | Release 1.0 |
 | SEC-010 No secrets in Git | ✅ | `.env*` ignored; gitleaks in CI |
 | SEC-011 Dependency scanning (S) | ✅ | `npm audit` + Dependabot |
@@ -256,6 +264,7 @@ hard delete + anonymise.
 | `company` | Employer's company + verification status, reason, verified-at/by | `…_companies` |
 | `job` | Job advert + lifecycle status, reason, submitted/published/closed times | `20261112134056_jobs` |
 | `job.search_vector` | Stored, generated search document + partial GIN index (published only) | `…_job_search`, `…_job_search_vector` |
+| `candidate_profile`, `cv`, `application`, `application_status_history` | Candidate side: profile, CVs (files in object storage), applications with snapshot + history | `20261112163741_candidates_and_applications` |
 | `session` | Opaque session tokens | `…_auth` |
 | `account` | Credentials (Argon2id hash) | `…_auth` |
 | `verification` | Email-verification / reset tokens | `…_auth` |
@@ -299,7 +308,10 @@ Design: [10-api-design](05-design/02-api-design.md), [11-ui-flows](04-design/01-
 | `/admin/jobs`, `/admin/jobs/{id}` | Admin job queue and review |
 | `GET /api/v1/jobs?q=&location=&workMode=&jobType=&cursor=&limit=` | Public search (no login) |
 | `GET /api/v1/jobs/{id}` | Public job details – explicit field allow-list; hidden job → 404 |
-| `/jobs`, `/jobs/{id}` | Public search and job details (proxy returns a real 404 for hidden jobs) |
+| `/jobs`, `/jobs/{id}` | Public search and job details (proxy returns a real 404 for hidden jobs); candidates get the apply panel |
+| `GET · PUT /api/v1/candidate/profile` · `GET · POST /api/v1/candidate/cvs` · `DELETE /api/v1/candidate/cvs/{id}` · `GET …/download-url` | Candidate profile and CVs |
+| `GET · POST /api/v1/candidate/applications` · `GET /api/v1/candidate/applications/{id}` | Apply; my applications |
+| `/candidate/profile`, `/candidate/applications`, `/candidate/applications/{id}` | Candidate pages (proxy-gated) |
 
 `/privacy` is a **placeholder** – real policy text is needed before launch.
 
@@ -331,9 +343,9 @@ Design: [10-api-design](05-design/02-api-design.md), [11-ui-flows](04-design/01-
 
 | Layer | Tool | Count | Runs |
 |---|---|---|---|
-| Unit | Vitest | 108 | `npm test`, CI |
-| Integration (real Postgres + Mailpit) | Vitest | 70 | `npm run test:integration`, CI |
-| End-to-end (real browser, prod build) | Playwright | 31 | `npm run test:e2e`, **local only** |
+| Unit | Vitest | 118 | `npm test`, CI |
+| Integration (real Postgres + Mailpit + s3mock) | Vitest | 83 | `npm run test:integration`, CI |
+| End-to-end (real browser, prod build) | Playwright | 40 | `npm run test:e2e`, **local only** |
 | Performance | `scripts/perf-search.ts` | 4 queries × 50 runs | `npm run perf:search`, local (rolls back) |
 
 **CI pipeline** (`.github/workflows/ci.yml`, every PR and push to `main`):
@@ -348,6 +360,8 @@ integration tests (Postgres 17, Mailpit) · `npm audit` + gitleaks secret scan.
   13 screenshots; found late cross-field validation errors (fixed).
 - [qa/2026-11-12-job-search-qa-report.md](08-testing/qa-reports/2026-11-12-job-search-qa-report.md) – public search (sprint S2),
   13/13 passed, 9 screenshots; found 5 issues incl. 'Log in to apply' losing the job (fixed).
+- [qa/2026-11-12-candidate-apply-qa-report.md](08-testing/qa-reports/2026-11-12-candidate-apply-qa-report.md) – profile, CVs,
+  applying (S3), 9/9 passed, 11 screenshots; found the form/API `null` bug and missing phone navigation (fixed).
 
 ---
 
@@ -419,6 +433,10 @@ Product and implementation decisions:
 | D-27 | 2026-11-12 | Login and logout use a full page load (fixes a navigation race; logout also drops cached private pages) | Dev |
 | D-28 | 2026-11-12 | Decision emails are sent after the response (`sendEmailInBackground`), never delaying the admin's click | Dev |
 | D-29 | 2026-11-12 | Candidates' home is `/jobs`; search works without JavaScript (plain GET form, "Load more" link) | Dev |
+| D-30 | 2026-11-12 | Local/CI file storage is `adobe/s3mock` 5.2.3 (MinIO/SeaweedFS publish no versioned tags); production R2. s3mock doesn't verify signatures – link expiry verified on R2 in S6 | Dev |
+| D-31 | 2026-11-12 | CV type is detected from the file's bytes; filenames are cleaned and stored only for display; files live under random keys | Dev |
+| D-32 | 2026-11-12 | Applied migrations are immutable; CI rejects PRs that change them (after defect #28) | Dev |
+| D-33 | 2026-11-12 | Candidates without a profile/CV are sent to Profile & CVs and back (not an inline upload in the apply sheet) | Dev |
 
 ---
 
@@ -428,8 +446,10 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
-| 2026-11-12 | *(open)* | Documentation restructured into folders 01–12 (existing docs moved with history); 39 new documents with 63 Mermaid diagrams (C4, ER, state, sequence, user flows, journeys, Gantt, CI/CD); generated test-case catalogue (`npm run docs:test-cases`); `CLAUDE.md` doc-routing updated |
-| 2026-11-12 | *(open)* | Public job search + details – sprint S2: full-text search (generated column, GIN), visibility rule, `/jobs` + `/jobs/{id}`, public API, real 404s, perf script; fixes: login `next`, logout race, mobile header, background emails |
+| 2026-11-12 | *(open)* | Sprint S3: candidate profile, CVs (s3mock/R2), apply with snapshot, My applications + timeline, candidate tab bar, employer application counts; CI migration guard; nullish form fix |
+| 2026-11-12 | *(open)* | Fix: restore 4 applied migrations altered by the docs restructure (`fix/restore-applied-migrations`) |
+| 2026-11-12 | #19 | Documentation set: folders 01–12 (moved with history), 39 new documents, 63 Mermaid diagrams, generated test catalogue |
+| 2026-11-12 | #18 | Sprint S2: public job search (stored search_vector, GIN), job details, public API, real 404s; login/logout/mobile fixes |
 | 2026-11-12 | #17 | Jobs – sprint S1 (core loop step 2) + docs sync |
 | 2026-11-12 | *(open)* | Agile methodology document (docs/07-implementation/01-agile-methodology.md): Scrum + XP for a solo developer, DoR/DoD, backlog epics E0–E10, sprint plan S1–S6 |
 | 2026-11-12 | *(open)* | Company profile + admin verification (core loop step 1): `industry`/`company` tables, `/api/v1` foundation, employer + admin screens, decision emails, proxy role gate, QA report |
@@ -479,7 +499,7 @@ Planned as sprints S1–S6 in [docs/07-implementation/01-agile-methodology.md §
 1. ~~Company profile + admin verification queue~~ ✅
 2. ~~Jobs: create, submit, approve, publish~~ ✅ (sprint S1)
 3. ~~Public job search and details~~ ✅ (sprint S2)
-4. Candidate profile, CV upload, apply, application history
+4. ~~Candidate profile, CV upload, apply, application history~~ ✅ (sprint S3)
 5. Employer applicant management; account deletion + erasure worker
 6. Deployment, backups, Sentry; E2E in CI
 

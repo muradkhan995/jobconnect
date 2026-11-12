@@ -108,7 +108,7 @@ async function myJob(user: CurrentUser, jobId: string) {
 
 // ── Employer ──────────────────────────────────────────────────────────────────
 
-/** FR-EMP-013: the employer's jobs, newest first. Application counts arrive with applications. */
+/** FR-EMP-013: the employer's jobs, newest first, with how many applications each has. */
 export async function listMyJobs(user: CurrentUser) {
   const company = await myCompany(user);
   return getDb().job.findMany({
@@ -121,6 +121,7 @@ export async function listMyJobs(user: CurrentUser) {
       deadline: true,
       createdAt: true,
       publishedAt: true,
+      _count: { select: { applications: true } }, // FR-EMP-013
     },
   });
 }

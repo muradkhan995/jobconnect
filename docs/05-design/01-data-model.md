@@ -68,6 +68,13 @@ and expensive later. Release 1.0 tables are listed in §8 but not designed in de
 
 `CHECK (status <> 'SUSPENDED' OR status_reason IS NOT NULL)`
 
+> **As built in sprint S3** (migration `20261112163741_candidates_and_applications`): `candidate_profile`,
+> `cv`, `application`, `application_status_history` as specified in §3.2–3.8. Extra CHECKs: CV MIME type
+> (PDF/DOCX), size ≤ 5 MB, cover letter ≤ 5,000 chars, and a live application must have its candidate and CV
+> snapshot. The 5-CV limit is enforced in the service while the candidate's profile row is locked
+> (`SELECT … FOR UPDATE`). CV files live in object storage under random keys (`cvs/{user}/{id}`); snapshots
+> under `applications/{id}/cv`.
+
 ### 3.2 `candidate_profile`
 | Column | Type | Rules |
 |---|---|---|

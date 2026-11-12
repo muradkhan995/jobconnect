@@ -33,3 +33,6 @@ A change is not done until the docs describe it. Record decisions with their dat
 - New dependencies: pin a release at least two weeks old.
 - Next.js 16 differs from older versions – read `node_modules/next/dist/docs/` before using an API.
 - Prisma 7: after `prisma migrate dev`, run `prisma generate` (`npm run db:migrate` does both).
+- **Never edit an existing migration file** (not even comments) – Prisma checksums applied migrations.
+  Add a new migration instead. CI fails PRs that change existing migrations. Bulk find/replace across the
+  repo must exclude `prisma/migrations/`.

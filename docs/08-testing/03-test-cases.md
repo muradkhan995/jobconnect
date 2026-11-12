@@ -5,15 +5,24 @@
 
 | Kind | Test cases |
 |---|---|
-| Unit | 84 |
-| Integration (real PostgreSQL + Mailpit) | 65 |
-| End-to-end (Playwright, production build) | 30 |
-| **Total** | **179** |
+| Unit | 91 |
+| Integration (real PostgreSQL + Mailpit) | 78 |
+| End-to-end (Playwright, production build) | 39 |
+| **Total** | **208** |
 
 How each kind is used: [01-test-strategy.md](01-test-strategy.md).
 
 | Kind | File | Case |
 |---|---|---|
+| E2E | `e2e/apply.spec.ts` | 80–83 a new candidate is guided to add a profile and CV (FR-CAN-001/005) |
+| E2E | `e2e/apply.spec.ts` | 84–86 applies in two clicks and sees the real status (FR-CAN-010/013, NFR-UX-003) |
+| E2E | `e2e/apply.spec.ts` | 87 my applications lists it with its status (FR-CAN-013) |
+| E2E | `e2e/apply.spec.ts` | 88 another candidate can't see it (MVP acceptance criterion) |
+| E2E | `e2e/apply.spec.ts` | 89 the employer's job list shows the application count (FR-EMP-013) |
+| E2E | `e2e/apply.spec.ts` | 90 candidate pages are candidate-only (real 404 for other roles) |
+| E2E | `e2e/apply.spec.ts` | 91 profile & CVs on a phone (NFR-UX-001) |
+| E2E | `e2e/apply.spec.ts` | 92–93 phones: candidate tab bar navigates; apply bar sits above it (D-07) |
+| E2E | `e2e/apply.spec.ts` | 94 phones: employers get their navigation too |
 | E2E | `e2e/auth.spec.ts` | 01 home page for visitors |
 | E2E | `e2e/auth.spec.ts` | 02–04 sign up as a candidate |
 | E2E | `e2e/auth.spec.ts` | 05 cannot log in before confirming the email (FR-AUTH-006) |
@@ -85,6 +94,19 @@ How each kind is used: [01-test-strategy.md](01-test-strategy.md).
 | Unit | `src/lib/uuidv7.test.ts` | uuidv7 › encodes the timestamp in the first 48 bits |
 | Unit | `src/lib/uuidv7.test.ts` | uuidv7 › sorts by creation time |
 | Unit | `src/lib/uuidv7.test.ts` | uuidv7 › is unique |
+| Integration | `src/modules/application/service.int.test.ts` | profile and CVs (FR-CAN-001/005) › needs a profile before uploading |
+| Integration | `src/modules/application/service.int.test.ts` | profile and CVs (FR-CAN-001/005) › stores a PDF with a clean name and gives a download link only to its owner |
+| Integration | `src/modules/application/service.int.test.ts` | profile and CVs (FR-CAN-001/005) › refuses a file that isn't really a PDF or Word document |
+| Integration | `src/modules/application/service.int.test.ts` | profile and CVs (FR-CAN-001/005) › keeps at most 5 CVs, even when uploads arrive at the same time |
+| Integration | `src/modules/application/service.int.test.ts` | applying (FR-CAN-010/011/012, BR-APP-001…003) › applies once, with a CV snapshot and an APPLIED history entry |
+| Integration | `src/modules/application/service.int.test.ts` | applying (FR-CAN-010/011/012, BR-APP-001…003) › refuses a second application to the same job – also after deleting the CV (BR-APP-002) |
+| Integration | `src/modules/application/service.int.test.ts` | applying (FR-CAN-010/011/012, BR-APP-001…003) › lets only one of two simultaneous applications through |
+| Integration | `src/modules/application/service.int.test.ts` | applying (FR-CAN-010/011/012, BR-APP-001…003) › keeps the submitted CV when the candidate later deletes theirs (BR-APP-003) |
+| Integration | `src/modules/application/service.int.test.ts` | applying (FR-CAN-010/011/012, BR-APP-001…003) › refuses jobs past their deadline (422) and hidden jobs (404) |
+| Integration | `src/modules/application/service.int.test.ts` | applying (FR-CAN-010/011/012, BR-APP-001…003) › refuses someone else's CV |
+| Integration | `src/modules/application/service.int.test.ts` | applying (FR-CAN-010/011/012, BR-APP-001…003) › is for candidates only |
+| Integration | `src/modules/application/service.int.test.ts` | privacy between candidates (MVP acceptance criterion) › never shows a candidate another candidate's applications |
+| Integration | `src/modules/application/service.int.test.ts` | database rules › rejects an unsupported file type or an oversized CV row |
 | Integration | `src/modules/audit/audit.int.test.ts` | audit_log database rules › stores an entry |
 | Integration | `src/modules/audit/audit.int.test.ts` | audit_log database rules › stamps occurred_at with the database clock, ignoring the caller |
 | Integration | `src/modules/audit/audit.int.test.ts` | audit_log database rules › rejects UPDATE |
@@ -115,6 +137,12 @@ How each kind is used: [01-test-strategy.md](01-test-strategy.md).
 | Unit | `src/modules/auth/signup-rules.test.ts` | checkSignup › accepts the self-service role %s |
 | Unit | `src/modules/auth/signup-rules.test.ts` | checkSignup › rejects the role %s (FR-AUTH-002) |
 | Unit | `src/modules/auth/signup-rules.test.ts` | checkSignup › rejects a missing or outdated privacy policy acceptance (NFR-PRV-002) |
+| Unit | `src/modules/candidate/cv-file.test.ts` | detectCvType (by content, NFR-SEC-008) › recognises PDF and DOCX |
+| Unit | `src/modules/candidate/cv-file.test.ts` | detectCvType (by content, NFR-SEC-008) › rejects other files, even when renamed |
+| Unit | `src/modules/candidate/cv-file.test.ts` | checkCvFile › accepts a small PDF |
+| Unit | `src/modules/candidate/cv-file.test.ts` | checkCvFile › refuses empty, too large and wrong-type files with the right status |
+| Unit | `src/modules/candidate/cv-file.test.ts` | checkCvFile › accepts exactly 5 MB |
+| Unit | `src/modules/candidate/cv-file.test.ts` | cleanFilename › strips paths, control characters and fixes the extension to match the content |
 | Unit | `src/modules/company/rules.test.ts` | company lifecycle (BR §2) › only pending companies can be verified or rejected |
 | Unit | `src/modules/company/rules.test.ts` | company lifecycle (BR §2) › requires a reason to reject or suspend (BR-CMP-002) |
 | Unit | `src/modules/company/rules.test.ts` | company lifecycle (BR §2) › suspend and reinstate move between VERIFIED and SUSPENDED |
@@ -193,3 +221,4 @@ How each kind is used: [01-test-strategy.md](01-test-strategy.md).
 | Integration | `src/modules/job/service.int.test.ts` | admin queue › lists pending jobs oldest first (FR-ADM-009) |
 | Integration | `src/modules/job/service.int.test.ts` | database rules › rejects max salary below min, and a missing location for on-site jobs |
 | Integration | `src/modules/job/service.int.test.ts` | database rules › rejects a REMOVED job without a reason |
+| Unit | `src/modules/schemas-roundtrip.test.ts` | input schemas accept their own output (form → API) › %s |

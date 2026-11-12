@@ -4,6 +4,7 @@ import { orNotFound } from "@/lib/http/page";
 import { getCurrentUser } from "@/modules/auth/session";
 import { JobPreview } from "@/modules/job/components/job-preview";
 import { getPublicJob } from "@/modules/job/search";
+import { CandidateApply } from "@/modules/application/components/candidate-apply";
 
 export async function generateMetadata({
   params,
@@ -28,15 +29,17 @@ export default async function JobPage({ params }: PageProps<"/jobs/[id]">) {
   ]);
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 pb-28 sm:pb-10">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 pb-44 sm:pb-10">
       <Link href="/jobs" className="text-sm underline">
         ← Back to search
       </Link>
       <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 dark:border-zinc-800 dark:bg-zinc-950">
         <JobPreview job={job} />
       </div>
-      {/* Apply panel – sticky at the bottom on phones (docs/04-design/01-ui-flows.md §4.2). Applying arrives in sprint S3. */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white p-4 sm:static sm:mt-6 sm:border-0 sm:bg-transparent sm:p-0 dark:border-zinc-800 dark:bg-zinc-950 sm:dark:bg-transparent">
+      {/* Apply panel – sticky at the bottom on phones, above the candidate tab bar (docs/04-design/01-ui-flows.md §2.1, §4.2). */}
+      <div
+        className={`fixed inset-x-0 ${user?.role === "CANDIDATE" ? "bottom-16" : "bottom-0"} z-10 max-h-[70vh] overflow-y-auto border-t border-zinc-200 bg-white p-4 sm:static sm:max-h-none sm:overflow-visible sm:mt-6 sm:border-0 sm:bg-transparent sm:p-0 dark:border-zinc-800 dark:bg-zinc-950 sm:dark:bg-transparent`}
+      >
         <div className="mx-auto max-w-3xl">
           {!user ? (
             <Link
@@ -46,10 +49,7 @@ export default async function JobPage({ params }: PageProps<"/jobs/[id]">) {
               Log in to apply
             </Link>
           ) : user.role === "CANDIDATE" ? (
-            <p className="rounded-lg border border-zinc-300 px-4 py-3 text-center text-sm sm:text-left dark:border-zinc-700">
-              Applying opens soon – you&apos;ll be able to apply with your saved
-              CV.
-            </p>
+            <CandidateApply jobId={job.id} jobTitle={job.title} />
           ) : (
             <p className="text-center text-sm text-zinc-600 sm:text-left dark:text-zinc-400">
               You&apos;re viewing this job as{" "}

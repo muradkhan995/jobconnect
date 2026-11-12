@@ -17,6 +17,7 @@
 | `20261112134056_jobs` | `job` + enums; salary, location, reason, published_at, title, GBP CHECKs; queue + published partial indexes |
 | `20261112144445_job_search` | `job_search_document()` function |
 | `20261112144742_job_search_vector` | Stored generated `search_vector` + partial GIN index |
+| `20261112163741_candidates_and_applications` | `candidate_profile`, `cv`, `application`, `application_status_history`; CV type/size, cover letter, snapshot CHECKs |
 
 ## 2. How to write one
 
@@ -27,7 +28,7 @@ flowchart LR
 ```
 
 Rules
-- One migration per change; never edit a migration that is on `main` – add a new one.
+- One migration per change; **never edit an existing migration – not even a comment** (Prisma checksums them; defect #28). CI fails any PR that modifies, renames or deletes one. Bulk find/replace must exclude `prisma/migrations/`.
 - Generated columns: declare as `Unsupported("…")` with `@default(dbgenerated("<exact pg expression>"))`
   so the drift check stays clean (ADR-010).
 - Use only syntax supported by the **production** Postgres major (17).

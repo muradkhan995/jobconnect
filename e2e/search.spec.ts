@@ -118,7 +118,10 @@ test("65–66 job details: visitors are asked to log in, and come back afterward
   await page.getByLabel("Password").fill(DEMO_PASSWORD);
   await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(new RegExp(`/jobs/${jobIds[0]}$`));
-  await expect(page.getByText("Applying opens soon")).toBeVisible();
+  // The candidate sees how to apply (S3): demo candidate has no CV yet.
+  await expect(
+    page.getByRole("link", { name: "Add your CV to apply" }),
+  ).toBeVisible();
   await shot(page, "66-job-details-candidate");
 });
 

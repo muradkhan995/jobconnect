@@ -45,14 +45,14 @@ them. ✅ done · ⬜ planned.
 | JC-402 ✅ | As **Amira** I want to filter by work mode and job type. | Given filters, then only matching jobs show; no match → "Clear filters". | E2E 62–63 |
 | JC-403 ✅ | As **Amira** I want to read a job before applying. | Then I see company (verified), salary, closing date, requirements; hidden jobs are a 404. | E2E 65–67 |
 
-## E5 Profile, CVs, applying ⬜ (S3)
+## E5 Profile, CVs, applying ✅ (S3)
 
-| ID | Story | Acceptance criteria (draft) |
-|---|---|---|
-| JC-501 ⬜ | As **Amira** I want a basic profile. | Name, headline, location, phone; editable. |
-| JC-502 ⬜ | As **Amira** I want to upload up to 5 CVs. | PDF/DOCX only (checked by content), ≤ 5 MB; 6th refused; download via a 5-minute link. |
-| JC-503 ⬜ | As **Amira** I want to apply with a saved CV. | ≤ 3 clicks from job details; once per job ever; refused after the deadline; the CV is snapshotted. |
-| JC-504 ⬜ | As **Amira** I want to see all my applications with status. | List with job, company, status, date; detail with timeline. |
+| ID | Story | Acceptance criteria | Evidence |
+|---|---|---|---|
+| JC-501 ✅ | As **Amira** I want a basic profile. | Name required; headline, location, phone optional and editable. | E2E 80–81 |
+| JC-502 ✅ | As **Amira** I want to upload up to 5 CVs. | PDF/DOCX only (checked by content), ≤ 5 MB; 6th refused (also under concurrency); download via a 5-minute link. | unit `cv-file`, int, E2E 82–83 |
+| JC-503 ✅ | As **Amira** I want to apply with a saved CV. | 2 clicks from job details; once per job ever; refused after the deadline; the CV is snapshotted. | int, E2E 84–86 |
+| JC-504 ✅ | As **Amira** I want to see all my applications with status. | List with job, company, status, date; detail with timeline; nobody else can see them. | int, E2E 85, 87–88 |
 
 ## E6–E8 ⬜
 Written at refinement before S4–S6: applicant management (FR-EMP-013…018), account deletion and admin

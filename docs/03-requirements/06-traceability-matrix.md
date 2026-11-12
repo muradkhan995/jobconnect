@@ -29,12 +29,15 @@ flowchart LR
 | FR-EMP-001/003 | Data §3.5, API §4.6 | `modules/company/*`, `/employer/company` | int `company`, E2E 20–22, 28–29 | ✅ |
 | FR-EMP-004 | BR-CMP-001 | `job/service.ts` submit/resume/approve checks | int `job` | ✅ |
 | FR-EMP-006…011 | Data §3.6, API §4.7, state §3 | `modules/job/*`, `/employer/jobs/*` | unit `job/rules`, int `job`, E2E 40–52 | ✅ |
-| FR-EMP-013 | API §4.7 | `listMyJobs` | E2E 40, 49 | 🟡 counts with S3 |
+| FR-EMP-013 | API §4.7 | `listMyJobs` (`_count.applications`) | E2E 40, 49, 89 | ✅ |
 | FR-ADM-007/008 | API §4.9, seq. §3 | `company/service.ts` decideCompany, `/admin/companies/*` | int, E2E 23–31 | ✅ |
 | FR-ADM-009…011 | API §4.9, seq. §4 | `job/service.ts` decideJob, `/admin/jobs/*` | int, E2E 46–52 | ✅ |
 | FR-ADM-019/021 | Data §3.10, 12-audit/01 | `modules/audit/audit.ts`, migration triggers | int `audit` | 🟡 more actions per feature |
 | FR-CAN-006…008 | Data §5 Q1, API §4.4 | `modules/job/search.ts`, `/jobs`, `/jobs/[id]` | int `search`, E2E 60–72 | ✅ |
-| FR-CAN-001/005/010…013 | UI J4, API §4.3/4.5 | – | – | ⬜ S3 |
+| FR-CAN-001 | API §4.3 | `modules/candidate/service.ts`, `/candidate/profile` | int, E2E 80–81 | ✅ |
+| FR-CAN-005 | API §4.3, NFR-SEC-008 | `candidate/cv-file.ts` (content type), `lib/storage.ts`, `CvManager` | unit, int (5-CV race), E2E 82–83 | ✅ |
+| FR-CAN-010…012 | BR-APP-001…003, seq. §6 | `modules/application/service.ts` applyForJob, `ApplyForm` | int (once, race, snapshot, deadline), E2E 84–86 | ✅ |
+| FR-CAN-013 | UI §4.3 | `/candidate/applications`, `[id]` timeline | int (privacy), E2E 85, 87–88 | ✅ |
 | FR-EMP-014/015/017/018 | UI J5, API §4.8 | – | – | ⬜ S4 |
 | FR-CAN-017/018, FR-ADM-004…006 | Data §6 | – | – | ⬜ S5 |
 

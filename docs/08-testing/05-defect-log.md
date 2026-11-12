@@ -9,11 +9,11 @@ Every defect found so far, how it was found, and how it was fixed. Severity: **C
 **Major** (feature broken), **Minor** (cosmetic/UX).
 
 ```mermaid
-pie title How defects were found (25)
-  "E2E test failure (#3 5 8 9 12 13 23 24)" : 8
-  "Screenshot review (#1 2 4 6 11)" : 5
+pie title How defects were found (28)
+  "E2E test failure (#3 5 8 9 12 13 23 24 26)" : 9
+  "Screenshot review (#1 2 4 6 11 27)" : 6
   "Tests, builds, measurement (#7 10 14 15 16 25)" : 6
-  "Tooling, CI, dev environment (#17-22)" : 6
+  "Tooling, CI, dev environment (#17-22, 28)" : 7
 ```
 
 | # | Area | Defect | Sev. | Found by | Fix | Status |
@@ -43,5 +43,8 @@ pie title How defects were found (25)
 | 23 | E2E | Dev server hot-reload reloaded pages mid-test | Major (test) | E2E | Run against production build | ✅ |
 | 24 | E2E | Tests hit the login rate limit (works as designed) | Minor (test) | E2E | Reset counters per test | ✅ |
 | 25 | Seed | Importing the demo password ran the seed's DB code | Minor (test) | Import error | Split `demo-users.ts` | ✅ |
+| 26 | Forms | Empty optional fields (phone; remote job location) became `null` and the API rejected them (forms send the parsed value) | Major | E2E 81 | `nullish` + round-trip unit test for every input schema | ✅ |
+| 27 | Navigation | No navigation at all on phones for logged-in users | Major | Screenshot 91 | Candidate tab bar (D-07) + mobile link row | ✅ |
+| 28 | Migrations | Docs path rewrite edited comments in 4 applied migrations → Prisma demanded a reset | **Critical** (deploy) | `prisma migrate dev` | Restored (PR); CI rejects changed migrations; `CLAUDE.md` rule | ✅ |
 
 **Open:** #13 (watch in CI). Planned: carry this log forward per sprint.

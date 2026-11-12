@@ -13,7 +13,11 @@ const ROLE_NAV: Record<
   keyof typeof ROLE_LABEL,
   { href: string; label: string }[]
 > = {
-  CANDIDATE: [{ href: "/jobs", label: "Find jobs" }],
+  CANDIDATE: [
+    { href: "/jobs", label: "Find jobs" },
+    { href: "/candidate/applications", label: "My applications" },
+    { href: "/candidate/profile", label: "Profile & CVs" },
+  ],
   EMPLOYER: [
     { href: "/employer", label: "Dashboard" },
     { href: "/employer/jobs", label: "Jobs" },
@@ -84,6 +88,24 @@ export async function SiteHeader() {
           )}
         </nav>
       </div>
+      {/* Phones: employers and admins get their links as a second row (candidates use the
+          bottom tab bar – components/candidate-tab-bar.tsx). */}
+      {user && user.role !== "CANDIDATE" && ROLE_NAV[user.role].length > 0 && (
+        <nav
+          aria-label="Main (mobile)"
+          className="flex gap-5 overflow-x-auto border-t border-zinc-100 px-4 py-2 text-sm sm:hidden dark:border-zinc-900"
+        >
+          {ROLE_NAV[user.role].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="whitespace-nowrap py-1.5 font-medium"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
