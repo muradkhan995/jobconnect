@@ -32,6 +32,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
+    // Pin the project root. Without it, a stray package-lock.json in a parent
+    // folder (e.g. the home directory) makes Turbopack guess the wrong root.
+    root: __dirname,
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
