@@ -5,7 +5,7 @@ import { SearchForm } from "@/modules/job/components/search-form";
 
 export default async function Home() {
   const user = await getCurrentUser();
-  // Each role has its own home (docs/11 §2).
+  // Each role has its own home (docs/04-design/01-ui-flows.md §2).
   if (user?.role === "CANDIDATE") redirect("/jobs");
   if (user?.role === "EMPLOYER") redirect("/employer");
   if (user?.role === "ADMIN") redirect("/admin");

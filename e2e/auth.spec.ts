@@ -3,7 +3,7 @@ import { DEMO_PASSWORD } from "../prisma/demo-users";
 import { resetRateLimits } from "./db";
 import { MAILPIT, linkFromEmail, shot, waitForEmail } from "./helpers";
 
-// One user journey, step by step: FR-AUTH-001..008 (docs/11 J1/J4 entry points).
+// One user journey, step by step: FR-AUTH-001..008 (docs/04-design/01-ui-flows.md J1/J4 entry points).
 test.describe.configure({ mode: "serial" });
 test.beforeEach(resetRateLimits);
 

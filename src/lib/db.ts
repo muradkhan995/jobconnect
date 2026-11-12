@@ -4,7 +4,7 @@ import { PrismaClient } from "@/generated/prisma/client";
 import { env } from "@/lib/env";
 
 function createClient(): PrismaClient {
-  // Sessions run in UTC via the database default set in the init migration (docs/09 §1).
+  // Sessions run in UTC via the database default set in the init migration (docs/05-design/01-data-model.md §1).
   // Not set per connection: poolers such as PgBouncer can reject startup options.
   const adapter = new PrismaPg({ connectionString: env().DATABASE_URL });
   return new PrismaClient({ adapter });

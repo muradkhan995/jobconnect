@@ -3,7 +3,7 @@ import { SALARY_PERIOD_LABEL } from "./schemas";
 
 type Tone = "neutral" | "success" | "warning" | "danger";
 
-/** Plain-language job status labels (docs/11 §5.2). */
+/** Plain-language job status labels (docs/04-design/01-ui-flows.md §5.2). */
 export const JOB_STATUS_LABEL: Record<
   JobStatus,
   { employer: string; admin: string; tone: Tone }

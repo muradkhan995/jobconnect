@@ -12,9 +12,9 @@
 
 ## Checklist
 
-<!-- Full Definition of Done: docs/12-agile-methodology.md §9 -->
+<!-- Full Definition of Done: docs/07-implementation/01-agile-methodology.md §9 -->
 
 - [ ] CI is green (format, lint, types, unit, integration, build, audit)
 - [ ] `docs/00-solution-document.md` updated (status, traceability, decision log, change log)
-- [ ] Affected design doc updated (`docs/03`–`11`) and `README.md` if setup changed
+- [ ] Affected design doc updated (`docs/03-requirements/01-functional-requirements.md`–`11`) and `README.md` if setup changed
 - [ ] New tests cover the change; e2e run locally if a user flow changed

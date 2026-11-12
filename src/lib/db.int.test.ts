@@ -1,5 +1,5 @@
 // Integration tests: run against a real PostgreSQL (npm run test:integration).
-// They verify the conventions the init migration sets up (docs/09-data-model.md §1).
+// They verify the conventions the init migration sets up (docs/05-design/01-data-model.md §1).
 import { afterAll, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));

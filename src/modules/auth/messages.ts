@@ -1,4 +1,4 @@
-/** Plain-language messages for auth error codes (docs/11-ui-flows.md §6). */
+/** Plain-language messages for auth error codes (docs/04-design/01-ui-flows.md §6). */
 const MESSAGES: Record<string, string> = {
   EMAIL_NOT_VERIFIED:
     "Please confirm your email first. We've sent you a new link – check your inbox.",

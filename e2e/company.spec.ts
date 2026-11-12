@@ -3,7 +3,7 @@ import { DEMO_PASSWORD } from "../prisma/demo-users";
 import { createUser, resetRateLimits, TEST_PASSWORD } from "./db";
 import { MAILPIT, login, shot, waitForEmail } from "./helpers";
 
-// Core loop step 1 (docs/07 §2, docs/11 J1 + J2): an employer creates a company, an admin
+// Core loop step 1 (docs/02-product-strategy/06-mvp-definition.md §2, docs/04-design/01-ui-flows.md J1 + J2): an employer creates a company, an admin
 // rejects it with a reason, the employer fixes it, the admin verifies it.
 test.describe.configure({ mode: "serial" });
 test.beforeEach(resetRateLimits);

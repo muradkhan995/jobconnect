@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 10
     services:
       postgres:
-        # Same major as docker-compose.yml and production (docs/09-data-model.md §7).
+        # Same major as docker-compose.yml and production (docs/05-design/01-data-model.md §7).
         image: postgres:17-alpine
         env:
           POSTGRES_USER: jobconnect

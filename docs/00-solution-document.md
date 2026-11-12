@@ -6,7 +6,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.4 |
+| Version | 1.5 |
 | Status | Current – reflects branch `feat/job-search` (on top of `main` at `2ffb7af`, PR #17) |
 | Phase | 3 – Build (MVP, release 0.1) |
 | Owner | Product Owner |
@@ -44,7 +44,7 @@
 | Phase 3 – Build | 🟡 In progress – foundation, authentication, company verification, jobs (S1), public job search (S2) done |
 | `main` CI | ✅ Green (lint, types, unit, integration, build, audit, secret scan) |
 | Deployed | ❌ Not yet – runs locally only |
-| MVP core loop (docs/07 §2) | **Steps 1–3 of 5 partly done**: companies verified; jobs approved and published; anyone can search and read jobs. Candidates can't apply yet |
+| MVP core loop (docs/02-product-strategy/06-mvp-definition.md §2) | **Steps 1–3 of 5 partly done**: companies verified; jobs approved and published; anyone can search and read jobs. Candidates can't apply yet |
 
 **Working today:** sign up as candidate or employer, email confirmation, log in/out, password reset;
 employer company profile; admin verification queue with verify / reject (with reason) / suspend /
@@ -60,7 +60,7 @@ search** (keyword, location, work mode, job type, newest first, "Load more") and
 ## 2. Solution overview
 
 **Problem.** Candidates rarely hear back after applying; employers lose applications in email; fake job
-adverts erode trust. ([01-project-vision](01-project-vision.md))
+adverts erode trust. ([01-project-vision](02-product-strategy/01-vision.md))
 
 **Solution.** A job marketplace where only **verified employers** can publish jobs, and every
 application shows its **real status** from submission to decision. Role-specific AI assistants come
@@ -68,21 +68,21 @@ later (release 1.1+); humans always make hiring decisions.
 
 | Role | Main jobs | Persona |
 |---|---|---|
-| Candidate | Search, apply, track applications | Amira ([02](02-user-personas.md)) |
+| Candidate | Search, apply, track applications | Amira ([02](02-product-strategy/02-personas.md)) |
 | Employer | Company profile, post jobs, manage applicants | David |
 | Administrator | Verify companies, approve jobs, moderate | Sophie |
 
 **Constraints:** one part-time developer · < £20/month · UK/EU hosting and GDPR · TypeScript strict ·
-every change via pull request with passing CI. ([06-scope-and-risks](06-scope-and-risks.md))
+every change via pull request with passing CI. ([06-scope-and-risks](02-product-strategy/05-scope-and-risks.md))
 
-**Releases:** 0.1 MVP (core loop) → 1.0 (all Must + Should) → 1.1+ (AI agents). ([07](07-mvp-definition.md))
+**Releases:** 0.1 MVP (core loop) → 1.0 (all Must + Should) → 1.1+ (AI agents). ([07](02-product-strategy/06-mvp-definition.md))
 
 ---
 
 ## 3. Architecture as built
 
 A **modular monolith**: one Next.js application (UI + API + later a background worker) in one Docker
-image, PostgreSQL for all state. Full design: [08-system-architecture](08-system-architecture.md).
+image, PostgreSQL for all state. Full design: [08-system-architecture](06-architecture/01-system-architecture.md).
 
 ```
 Browser ──HTTPS──▶ Next.js app
@@ -163,8 +163,8 @@ proposes newer ones as pull requests, merged **only after CI on the PR is green*
 | `e2e/` | Playwright tests, helpers, global setup |
 | `docs/` | This document, discovery/design docs, QA reports |
 
-**Rules:** route handler → service → policy → repository (docs/08 §2.1); modules talk only through
-each other's public service functions; status changes are guarded updates (docs/09 §4).
+**Rules:** route handler → service → policy → repository (docs/06-architecture/01-system-architecture.md §2.1); modules talk only through
+each other's public service functions; status changes are guarded updates (docs/05-design/01-data-model.md §4).
 
 ---
 
@@ -246,7 +246,7 @@ Legend: ✅ done · 🟡 partial · ⬜ not started · ➖ not in MVP
 
 ## 7. Data model as built
 
-Design: [09-data-model](09-data-model.md). Conventions: UUIDv7 ids, `timestamptz` in UTC, `citext` emails,
+Design: [09-data-model](05-design/01-data-model.md). Conventions: UUIDv7 ids, `timestamptz` in UTC, `citext` emails,
 hard delete + anonymise.
 
 | Table | Purpose | Migration |
@@ -269,13 +269,13 @@ verified-at time · company website must be https · job salary min ≤ max · j
 rejected/removed job needs a reason · published job has a published-at time · job currency GBP ·
 audit log: no UPDATE/TRUNCATE, DELETE only after 24 months, timestamp set by DB, action-name format.
 
-**Deviation from docs/09:** "unverified" is `email_verified = false`, not a status value (D-10).
+**Deviation from docs/05-design/01-data-model.md:** "unverified" is `email_verified = false`, not a status value (D-10).
 
 ---
 
 ## 8. API and pages as built
 
-Design: [10-api-design](10-api-design.md), [11-ui-flows](11-ui-flows.md).
+Design: [10-api-design](05-design/02-api-design.md), [11-ui-flows](04-design/01-ui-flows.md).
 
 | Endpoint / page | Purpose |
 |---|---|
@@ -341,12 +341,12 @@ format → lint → typecheck → unit tests with coverage → build · migratio
 integration tests (Postgres 17, Mailpit) · `npm audit` + gitleaks secret scan.
 
 **QA reports:**
-- [qa/2026-11-12-auth-qa-report.md](qa/2026-11-12-auth-qa-report.md) – authentication, 11/11 passed, 17 screenshots.
-- [qa/2026-11-12-company-verification-qa-report.md](qa/2026-11-12-company-verification-qa-report.md) – company
+- [qa/2026-11-12-auth-qa-report.md](08-testing/qa-reports/2026-11-12-auth-qa-report.md) – authentication, 11/11 passed, 17 screenshots.
+- [qa/2026-11-12-company-verification-qa-report.md](08-testing/qa-reports/2026-11-12-company-verification-qa-report.md) – company
   verification, 5/5 passed, 12 screenshots; found wrong status codes on role pages (fixed via proxy gate).
-- [qa/2026-11-12-jobs-qa-report.md](qa/2026-11-12-jobs-qa-report.md) – jobs (sprint S1), 6/6 passed,
+- [qa/2026-11-12-jobs-qa-report.md](08-testing/qa-reports/2026-11-12-jobs-qa-report.md) – jobs (sprint S1), 6/6 passed,
   13 screenshots; found late cross-field validation errors (fixed).
-- [qa/2026-11-12-job-search-qa-report.md](qa/2026-11-12-job-search-qa-report.md) – public search (sprint S2),
+- [qa/2026-11-12-job-search-qa-report.md](08-testing/qa-reports/2026-11-12-job-search-qa-report.md) – public search (sprint S2),
   13/13 passed, 9 screenshots; found 5 issues incl. 'Log in to apply' losing the job (fixed).
 
 ---
@@ -373,7 +373,7 @@ npm run dev                                     # http://localhost:3000 · inbox
 
 ## 12. Decision log
 
-Architecture decisions (detail in [08 §9](08-system-architecture.md#9-architecture-decision-records-summary)):
+Architecture decisions (detail in [08 §9](06-architecture/01-system-architecture.md#9-architecture-decision-records-summary)):
 
 | ID | Decision |
 |---|---|
@@ -428,9 +428,10 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
+| 2026-11-12 | *(open)* | Documentation restructured into folders 01–12 (existing docs moved with history); 39 new documents with 63 Mermaid diagrams (C4, ER, state, sequence, user flows, journeys, Gantt, CI/CD); generated test-case catalogue (`npm run docs:test-cases`); `CLAUDE.md` doc-routing updated |
 | 2026-11-12 | *(open)* | Public job search + details – sprint S2: full-text search (generated column, GIN), visibility rule, `/jobs` + `/jobs/{id}`, public API, real 404s, perf script; fixes: login `next`, logout race, mobile header, background emails |
 | 2026-11-12 | #17 | Jobs – sprint S1 (core loop step 2) + docs sync |
-| 2026-11-12 | *(open)* | Agile methodology document (docs/12): Scrum + XP for a solo developer, DoR/DoD, backlog epics E0–E10, sprint plan S1–S6 |
+| 2026-11-12 | *(open)* | Agile methodology document (docs/07-implementation/01-agile-methodology.md): Scrum + XP for a solo developer, DoR/DoD, backlog epics E0–E10, sprint plan S1–S6 |
 | 2026-11-12 | *(open)* | Company profile + admin verification (core loop step 1): `industry`/`company` tables, `/api/v1` foundation, employer + admin screens, decision emails, proxy role gate, QA report |
 | 2026-11-12 | #13 | Software Solution Document, `CLAUDE.md` docs rule, PR template |
 | 2026-11-12 | #11 | Demo users (`db:seed`), Playwright E2E suite, auth QA report; fixed email link wrapping and admin home text |
@@ -473,7 +474,7 @@ Newest first. One row per merged pull request.
 | E2E data accumulates in the local DB (test companies) | Cluttered local queue | Acceptable locally; CI will use a fresh DB |
 
 ### Next steps (in order)
-Planned as sprints S1–S6 in [docs/12 §15](12-agile-methodology.md#15-release-plan).
+Planned as sprints S1–S6 in [docs/07-implementation/01-agile-methodology.md §15](07-implementation/01-agile-methodology.md#15-release-plan).
 
 1. ~~Company profile + admin verification queue~~ ✅
 2. ~~Jobs: create, submit, approve, publish~~ ✅ (sprint S1)
@@ -490,28 +491,30 @@ Planned as sprints S1–S6 in [docs/12 §15](12-agile-methodology.md#15-release-
   status (§1), traceability (§6), as-built sections (§3–§11) when affected, decision log (§12),
   change log (§13) and open questions (§14).
 - Detailed design changes go into the numbered document they belong to (e.g. a new table in
-  docs/09), and this document links to them.
+  docs/05-design/01-data-model.md), and this document links to them.
 - The pull-request template includes a checkbox for this; `CLAUDE.md` instructs the AI assistant to
-  do the same. The full Definition of Done is in [docs/12 §9](12-agile-methodology.md#9-definition-of-done).
+  do the same. The full Definition of Done is in [docs/07-implementation/01-agile-methodology.md §9](07-implementation/01-agile-methodology.md#9-definition-of-done).
 - Bump **Version** (minor for content, major for restructuring) and **Last updated** on every change.
 
 ---
 
 ## 16. Document index
 
-| Doc | Content |
+The full map, with every document, is **[docs/README.md](README.md)**. Folders:
+
+| Folder | Contents |
 |---|---|
-| [00-solution-document](00-solution-document.md) | **This document** – overview, status, decisions, changes |
-| [01-project-vision](01-project-vision.md) | Problem, vision, roles, stakeholders |
-| [02-user-personas](02-user-personas.md) | Amira, David, Sophie |
-| [03-functional-requirements](03-functional-requirements.md) | FR-* (MoSCoW) |
-| [04-non-functional-requirements](04-non-functional-requirements.md) | NFR-* |
-| [05-business-rules](05-business-rules.md) | Lifecycles, permission matrix |
-| [06-scope-and-risks](06-scope-and-risks.md) | Scope, constraints, risk register |
-| [07-mvp-definition](07-mvp-definition.md) | MVP feature set and acceptance criteria |
-| [08-system-architecture](08-system-architecture.md) | Architecture, hosting, ADRs |
-| [09-data-model](09-data-model.md) | Tables, constraints, indexes, GDPR deletion |
-| [10-api-design](10-api-design.md) | Endpoints, errors, pagination |
-| [11-ui-flows](11-ui-flows.md) | Site map, journeys, wireframes |
-| [12-agile-methodology](12-agile-methodology.md) | How we work: roles, sprints, backlog, Definition of Ready/Done, workflow, release plan |
-| [qa/](qa/) | QA reports and screenshots |
+| [01-overview](01-overview/) | Project overview (context diagram), glossary |
+| [02-product-strategy](02-product-strategy/) | Vision, personas, user journeys, value proposition, scope & risks, MVP, roadmap & KPIs |
+| [03-requirements](03-requirements/) | Functional, non-functional, business rules, use cases, user stories, traceability matrix |
+| [04-design](04-design/) | UX/UI: UI flows, sitemap & navigation, user-flow diagrams, screen inventory, design system, accessibility |
+| [05-design](05-design/) | Technical: data model, API, state diagrams, sequence diagrams, ER diagram, security design |
+| [06-architecture](06-architecture/) | System architecture, C4 diagrams, ADR log (ADR-001…011), technology stack |
+| [07-implementation](07-implementation/) | Agile methodology, codebase structure, coding standards, development workflow, feature guide |
+| [08-testing](08-testing/) | Test strategy, test plan, test-case catalogue (generated), performance, defect log, QA reports |
+| [09-deployment](09-deployment/) | Environments, CI/CD pipeline, release process, database migrations, deployment plan |
+| [10-operations](10-operations/) | Runbook, monitoring & alerting, backup & recovery, incident response, maintenance |
+| [11-content](11-content/) | Content guidelines, UX copy & messages, email catalogue, legal content, SEO & metadata |
+| [12-audit](12-audit/) | Audit logging, security (OWASP), privacy/GDPR, accessibility (WCAG), dependencies & licences |
+
+All diagrams are Mermaid (63 at version 1.5, each verified to render).

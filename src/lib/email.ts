@@ -28,7 +28,7 @@ type Log = {
 /**
  * Sends after the response, without making the caller wait (D-17): the action it reports on is
  * already committed, so slow or failing mail must never delay or fail the request. Outcome and
- * duration are logged. Retries arrive with the background worker (docs/08 §5.3).
+ * duration are logged. Retries arrive with the background worker (docs/06-architecture/01-system-architecture.md §5.3).
  */
 export function sendEmailInBackground(
   email: Email,

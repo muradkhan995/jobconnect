@@ -3,7 +3,7 @@ import { formatDeadline, formatSalary } from "@/modules/job/labels";
 import { JOB_TYPE_LABEL, WORK_MODE_LABEL } from "@/modules/job/schemas";
 import type { JobCard as JobCardData } from "@/modules/job/search";
 
-/** One search result (docs/11 §4.1). The whole card is one link, with a clear name. */
+/** One search result (docs/04-design/01-ui-flows.md §4.1). The whole card is one link, with a clear name. */
 export function JobCard({ job }: { job: JobCardData }) {
   const where = [job.location, WORK_MODE_LABEL[job.workMode]]
     .filter(Boolean)

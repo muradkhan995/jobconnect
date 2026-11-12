@@ -8,7 +8,7 @@ import type { SearchParams } from "@/modules/job/search-params";
 
 /**
  * Plain GET form: works without JavaScript, and every search is a shareable URL with
- * working back/forward buttons (docs/11 §4.1).
+ * working back/forward buttons (docs/04-design/01-ui-flows.md §4.1).
  */
 export function SearchForm({
   params,

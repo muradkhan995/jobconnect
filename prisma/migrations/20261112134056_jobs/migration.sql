@@ -51,7 +51,7 @@ ALTER TABLE "job" ADD CONSTRAINT "job_company_id_fkey" FOREIGN KEY ("company_id"
 ALTER TABLE "job" ADD CONSTRAINT "job_industry_id_fkey" FOREIGN KEY ("industry_id") REFERENCES "industry"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- ---------------------------------------------------------------------------
--- Hand-written: rules and indexes Prisma cannot express (docs/09 §4–5).
+-- Hand-written: rules and indexes Prisma cannot express (docs/05-design/01-data-model.md §4–5).
 -- ---------------------------------------------------------------------------
 
 -- BR-JOB-003: salary range is valid.
@@ -80,6 +80,6 @@ ALTER TABLE "job" ADD CONSTRAINT "job_currency_gbp"
 CREATE INDEX "job_pending_queue_idx" ON "job" ("submitted_at")
   WHERE "status" = 'PENDING_APPROVAL';
 
--- Public search orders published jobs newest first (docs/09 §5 Q1; used from sprint S2).
+-- Public search orders published jobs newest first (docs/05-design/01-data-model.md §5 Q1; used from sprint S2).
 CREATE INDEX "job_published_idx" ON "job" ("published_at" DESC)
   WHERE "status" = 'PUBLISHED';

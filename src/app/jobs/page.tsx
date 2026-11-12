@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "Jobs from verified employers, with real application status.",
 };
 
-/** Public job search (FR-CAN-006/007, docs/11 §4.1). */
+/** Public job search (FR-CAN-006/007, docs/04-design/01-ui-flows.md §4.1). */
 export default async function JobsPage({ searchParams }: PageProps<"/jobs">) {
   const params = parseSearchParams(await searchParams);
   const { items, nextCursor, total } = await searchJobs(params);

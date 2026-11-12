@@ -10,7 +10,7 @@ import { callApi } from "@/lib/client/api";
 export type PanelAction = {
   key: string;
   label: string;
-  /** Names the consequence before anything happens (docs/11 P5). */
+  /** Names the consequence before anything happens (docs/04-design/01-ui-flows.md P5). */
   confirm: string;
   needsReason?: boolean;
   primary?: boolean;

@@ -3,7 +3,7 @@ import { expect, type Page } from "@playwright/test";
 export const MAILPIT = "http://localhost:8025";
 
 /** Screenshots for the QA report, numbered in the order they are taken. */
-export const SHOTS_DIR = "docs/qa/screenshots";
+export const SHOTS_DIR = "docs/08-testing/qa-reports/screenshots";
 
 export async function shot(page: Page, name: string) {
   await page.screenshot({ path: `${SHOTS_DIR}/${name}.png`, fullPage: true });

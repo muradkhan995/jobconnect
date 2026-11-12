@@ -158,7 +158,7 @@ describe("admin decisions", () => {
     });
   });
 
-  it("lets only one of two simultaneous decisions win (guarded update, docs/09 §4)", async () => {
+  it("lets only one of two simultaneous decisions win (guarded update, docs/05-design/01-data-model.md §4)", async () => {
     const employer = await makeUser("EMPLOYER");
     const admin = await makeUser("ADMIN");
     const { id } = await svc.createMyCompany(employer, input);
