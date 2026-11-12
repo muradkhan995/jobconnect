@@ -6,7 +6,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.1 |
+| Version | 1.2 |
 | Status | Current – reflects branch `feat/company-verification` (on top of `main` at `ca48cad`, PR #13) |
 | Phase | 3 – Build (MVP, release 0.1) |
 | Owner | Product Owner |
@@ -381,6 +381,7 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
+| 2026-11-12 | *(open)* | Agile methodology document (docs/12): Scrum + XP for a solo developer, DoR/DoD, backlog epics E0–E10, sprint plan S1–S6 |
 | 2026-11-12 | *(open)* | Company profile + admin verification (core loop step 1): `industry`/`company` tables, `/api/v1` foundation, employer + admin screens, decision emails, proxy role gate, QA report |
 | 2026-11-12 | #13 | Software Solution Document, `CLAUDE.md` docs rule, PR template |
 | 2026-11-12 | #11 | Demo users (`db:seed`), Playwright E2E suite, auth QA report; fixed email link wrapping and admin home text |
@@ -420,6 +421,8 @@ Newest first. One row per merged pull request.
 | E2E data accumulates in the local DB (test companies) | Cluttered local queue | Acceptable locally; CI will use a fresh DB |
 
 ### Next steps (in order)
+Planned as sprints S1–S6 in [docs/12 §15](12-agile-methodology.md#15-release-plan).
+
 1. ~~Company profile + admin verification queue~~ ✅
 2. Jobs: create, submit, approve, publish (FR-EMP-006–011, FR-ADM-009–011)
 3. Public job search and details (FR-CAN-006–008)
@@ -437,7 +440,7 @@ Newest first. One row per merged pull request.
 - Detailed design changes go into the numbered document they belong to (e.g. a new table in
   docs/09), and this document links to them.
 - The pull-request template includes a checkbox for this; `CLAUDE.md` instructs the AI assistant to
-  do the same.
+  do the same. The full Definition of Done is in [docs/12 §9](12-agile-methodology.md#9-definition-of-done).
 - Bump **Version** (minor for content, major for restructuring) and **Last updated** on every change.
 
 ---
@@ -458,4 +461,5 @@ Newest first. One row per merged pull request.
 | [09-data-model](09-data-model.md) | Tables, constraints, indexes, GDPR deletion |
 | [10-api-design](10-api-design.md) | Endpoints, errors, pagination |
 | [11-ui-flows](11-ui-flows.md) | Site map, journeys, wireframes |
+| [12-agile-methodology](12-agile-methodology.md) | How we work: roles, sprints, backlog, Definition of Ready/Done, workflow, release plan |
 | [qa/](qa/) | QA reports and screenshots |
