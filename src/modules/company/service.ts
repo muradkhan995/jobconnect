@@ -6,13 +6,13 @@ import { env } from "@/lib/env";
 import { requestLogger } from "@/lib/logger";
 import {
   DomainError,
-  forbiddenRole,
   invalidTransition,
   notFound,
   stateChanged,
 } from "@/lib/http/errors";
 import { uuidv7 } from "@/lib/uuidv7";
 import { recordAudit } from "@/modules/audit/audit";
+import { requireRole } from "@/modules/auth/policy";
 import type { CurrentUser } from "@/modules/auth/session";
 import { companyDecisionEmail } from "./emails";
 import {
@@ -45,10 +45,6 @@ const companySelect = {
 export type CompanyView = Prisma.CompanyGetPayload<{
   select: typeof companySelect;
 }>;
-
-function requireRole(user: CurrentUser, role: CurrentUser["role"]) {
-  if (user.role !== role) throw forbiddenRole();
-}
 
 async function assertActiveIndustry(industryId: string) {
   const industry = await getDb().industry.findUnique({

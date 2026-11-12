@@ -40,6 +40,10 @@ Public (🌐)                     Candidate (C)                 Employer (E)    
 ```
 
 **Home after login:** candidate → `/jobs` · employer → `/employer` · admin → `/admin`.
+*As built:* candidates stay on `/` until job search (`/jobs`) exists in sprint S2 (D-19).
+
+**Added during build:** `/employer/company` (create/edit the company profile, J1) and `/check-email`
+(shown after sign-up). Both are linked from the role navigation / sign-up flow.
 
 ### 2.1 Navigation per role
 | Role | Top navigation (desktop) / bottom tab bar (mobile, candidate only) |
@@ -243,6 +247,23 @@ Database statuses are never shown raw. Badge colour always comes with text (P6).
   and when, then asks for the password (FR-CAN-018).
 - **Suspended login:** *"Your account is suspended. Contact support."* – no reason details on the login page.
 
-## 8. Open Questions
+## 8. Build Status
+Updated with every feature PR (see docs/00 §8 for endpoints).
+
+| Area | Screens | Status |
+|---|---|---|
+| Public / auth | `/`, `/register`, `/check-email`, `/login`, `/forgot-password`, `/reset-password`, `/privacy` | ✅ Built |
+| J1 – Employer gets verified | `/employer`, `/employer/company` | ✅ Built (QA: docs/qa/…company-verification) |
+| J2 – Admin verifies company / approves job | `/admin`, `/admin/companies`, `/admin/companies/[id]`, `/admin/jobs`, `/admin/jobs/[id]` | ✅ Built |
+| J3 – Employer posts a job | `/employer/jobs`, `/employer/jobs/new`, `/employer/jobs/[id]`, `/employer/jobs/[id]/edit` | ✅ Built (QA: docs/qa/…jobs) |
+| J4 – Candidate finds and applies | `/jobs`, `/jobs/[id]`, apply sheet, `/candidate/*` | ⬜ Sprints S2–S3 |
+| J5 – Employer reviews applicants | `/employer/jobs/[id]/applicants`, `/employer/applications/[id]` | ⬜ Sprint S4 |
+| Admin users, account deletion | `/admin/users*`, `/account` | ⬜ Sprint S5 |
+| Candidate mobile tab bar (§2.1) | – | ⬜ With candidate screens |
+
+**Implemented as specified:** status labels (§5.1–5.2), confirmation dialogs naming the consequence (P5),
+errors next to fields and all shown at once (§6), 360 px layouts for auth pages (P1).
+
+## 9. Open Questions
 - Q1: Brand/visual identity – is there a logo or colour preference, or should Phase 3 propose one?
 - Q2: ✅ **Decided (PO, 2026-11-11):** candidate bottom tab bar on mobile – see §2.1.

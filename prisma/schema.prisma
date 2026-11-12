@@ -125,6 +125,7 @@ model Industry {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   companies Company[]
+  jobs      Job[]
 
   @@map("industry")
 }
@@ -173,9 +174,95 @@ model Company {
 
   owner    User?    @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
   industry Industry @relation(fields: [industryId], references: [id], onDelete: Restrict)
+  jobs     Job[]
 
   @@index([verificationStatus, submittedAt])
   @@map("company")
+}
+
+/// Job lifecycle (BR §3).
+enum JobStatus {
+  DRAFT
+  PENDING_APPROVAL
+  PUBLISHED
+  PAUSED
+  REJECTED
+  CLOSED
+  REMOVED
+
+  @@map("job_status")
+}
+
+enum WorkMode {
+  ON_SITE
+  HYBRID
+  REMOTE
+
+  @@map("work_mode")
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERNSHIP
+
+  @@map("job_type")
+}
+
+enum ExperienceLevel {
+  ENTRY
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+
+  @@map("experience_level")
+}
+
+enum SalaryPeriod {
+  YEAR
+  DAY
+  HOUR
+
+  @@map("salary_period")
+}
+
+/// A job advert (docs/09 §3.6). Only PUBLISHED jobs of verified companies are visible (BR-JOB-001).
+model Job {
+  id              String          @id @db.Uuid
+  companyId       String          @map("company_id") @db.Uuid
+  title           String
+  description     String
+  requirements    String
+  /// NULL only for REMOTE jobs (BR-JOB-010) – CHECK.
+  location        String?
+  workMode        WorkMode        @map("work_mode")
+  jobType         JobType         @map("job_type")
+  experienceLevel ExperienceLevel @map("experience_level")
+  industryId      String          @map("industry_id") @db.Uuid
+  /// Whole pounds; min <= max (BR-JOB-003) – CHECK.
+  salaryMin       Int             @map("salary_min")
+  salaryMax       Int             @map("salary_max")
+  salaryPeriod    SalaryPeriod    @default(YEAR) @map("salary_period")
+  currency        String          @default("GBP") @db.Char(3)
+  /// End of the closing day (23:59:59 UTC). 1–90 days ahead at submit (BR-JOB-002, checked in code).
+  deadline        DateTime        @db.Timestamptz(3)
+  status          JobStatus       @default(DRAFT)
+  /// Shown to the employer; required when REJECTED or REMOVED (BR-JOB-008) – CHECK.
+  statusReason    String?         @map("status_reason")
+  submittedAt     DateTime?       @map("submitted_at") @db.Timestamptz(3)
+  publishedAt     DateTime?       @map("published_at") @db.Timestamptz(3)
+  closedAt        DateTime?       @map("closed_at") @db.Timestamptz(3)
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  industry Industry @relation(fields: [industryId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, createdAt(sort: Desc)])
+  @@map("job")
 }
 
 /// Append-only record of admin actions and security events (FR-ADM-019/021, docs/09 §3.10).

@@ -6,8 +6,8 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.2 |
-| Status | Current – reflects branch `feat/company-verification` (on top of `main` at `ca48cad`, PR #13) |
+| Version | 1.3 |
+| Status | Current – reflects branch `feat/jobs` (on top of `main` at `ef6f9d3`, PR #16) |
 | Phase | 3 – Build (MVP, release 0.1) |
 | Owner | Product Owner |
 | Last updated | 2026-11-12 |
@@ -41,17 +41,18 @@
 |---|---|
 | Phase 1 – Discovery (docs 01–07) | ✅ Complete |
 | Phase 2 – Design (docs 08–11) | ✅ Complete; 3 open questions (§14) |
-| Phase 3 – Build | 🟡 In progress – foundation, authentication, company verification done |
+| Phase 3 – Build | 🟡 In progress – foundation, authentication, company verification, jobs (sprint S1) done |
 | `main` CI | ✅ Green (lint, types, unit, integration, build, audit, secret scan) |
 | Deployed | ❌ Not yet – runs locally only |
-| MVP core loop (docs/07 §2) | **Step 1 of 5 done**: employers create a company, admins verify it. No jobs or applications yet |
+| MVP core loop (docs/07 §2) | **Steps 1–2 of 5 done**: companies verified; jobs posted, approved and published. Not yet searchable; no applications |
 
 **Working today:** sign up as candidate or employer, email confirmation, log in/out, password reset;
 employer company profile; admin verification queue with verify / reject (with reason) / suspend /
-reinstate and emails to the employer; role dashboards; demo accounts for every role; health check;
-audit log.
+reinstate; employers write, submit, edit, pause, resume and close jobs; admin job approval queue with
+approve / reject / remove (with reasons); emails to the employer for every decision; role dashboards;
+demo accounts for every role; health check; audit log.
 
-**Next feature:** jobs – create, submit, admin approval, publish (core loop step 2).
+**Next feature:** public job search and job details (sprint S2, core loop step 3).
 
 ---
 
@@ -90,13 +91,13 @@ Browser ──HTTPS──▶ Next.js app
                     │
                     ├─ src/app/ ─────────── pages (React Server Components) + route handlers
                     │    ├─ (auth)/…           register, login, check-email, forgot/reset password
-                    │    ├─ employer/…         employer dashboard, company profile
-                    │    ├─ admin/…            admin dashboard, company queue + review
+                    │    ├─ employer/…         employer dashboard, company profile, jobs (list/new/detail/edit)
+                    │    ├─ admin/…            admin dashboard, company + job queues and reviews
                     │    ├─ api/auth/[...all]  Better Auth endpoints
                     │    ├─ api/v1/…           JSON API (apiRoute wrapper: 401/403/400/problem+json)
                     │    └─ api/health         DB ping → 200 / 503
                     │
-                    ├─ src/modules/ ─────── business modules (auth, audit, company; more per feature)
+                    ├─ src/modules/ ─────── business modules (auth, audit, company, job; more per feature)
                     ├─ src/lib/ ─────────── db, auth, env, email, logger, security helpers
                     │
                     ├──▶ PostgreSQL 17 ─── data, sessions, rate limits, append-only audit log
@@ -143,6 +144,10 @@ proposes newer ones as pull requests, merged **only after CI on the PR is green*
 | `src/modules/auth/` | Sign-up rules, password hashing, emails, error messages, session helper, auth forms |
 | `src/modules/audit/` | `recordAudit()` – typed actions, transaction-aware, rejects personal data |
 | `src/modules/company/` | Company schemas (Zod), lifecycle table (`rules.ts`), service (ownership, guarded updates, audit, emails), labels, form + decision components |
+| `src/modules/job/` | Job schemas (Zod, cross-field rules), lifecycle + material-edit + deadline rules, service, labels/formatting, emails, form, preview, action components |
+| `src/modules/auth/policy.ts` | `requireRole()` used by every service |
+| `src/components/action-panel.tsx` | Shared choose → confirm (→ reason) → POST panel for lifecycle actions |
+| `src/lib/http/page.ts` | `orNotFound()` – service 404 / bad id → page 404 |
 | `src/lib/http/api.ts` | `apiRoute()` wrapper for every `/api/v1` endpoint: session, role, Zod body parsing, errors → RFC 9457 |
 | `src/lib/http/errors.ts` | `DomainError` + helpers (not found, forbidden role, invalid transition, state changed) |
 | `src/lib/client/api.ts` | Browser helper for calling the API and reading problem responses |
@@ -184,12 +189,22 @@ Legend: ✅ done · 🟡 partial · ⬜ not started · ➖ not in MVP
 | FR-CAN-001/005/006/007/008/010–013/017/018 | ⬜ | Candidate features |
 | FR-EMP-001 Create company profile | ✅ | `/employer/company`; E2E 20–22 |
 | FR-EMP-003 Edit company | ✅ | Rejected → back to review; blocked while suspended |
-| FR-EMP-004 No jobs until verified | 🟡 | Company status in place; enforced when jobs are built |
+| FR-EMP-004 No jobs until verified | ✅ | Drafts allowed; submit/resume/approve require a VERIFIED company |
+| FR-EMP-006 Create job draft | ✅ | `/employer/jobs/new`; E2E 40–43 |
+| FR-EMP-007 Deadline in the future (1–90 days at submit) | ✅ | Rules + integration tests |
+| FR-EMP-008 Submit for approval | ✅ | E2E 44–45 |
+| FR-EMP-009 Edit own jobs (material edit → re-approval) | ✅ | BR-JOB-004/005; E2E 50 |
+| FR-EMP-010 Pause / resume | ✅ | Integration tests |
+| FR-EMP-011 Close (final) | ✅ | Integration tests |
+| FR-EMP-013 Jobs list with application counts | 🟡 | List done; counts arrive with applications |
+| FR-ADM-009 Job approval queue | ✅ | `/admin/jobs`, oldest first; E2E 46 |
+| FR-ADM-010 Approve / reject with reason, employer notified | ✅ | E2E 47–52 |
+| FR-ADM-011 Remove a job with reason | ✅ | Integration tests |
 | FR-ADM-007 Company verification queue | ✅ | `/admin/companies`, oldest first; E2E 23–24 |
 | FR-ADM-008 Verify / reject with reason, employer notified | ✅ | Emails sent; E2E 25–31 |
 | FR-ADM-014 Industries | 🟡 | 13 seeded; admin editing ⬜ |
-| FR-EMP-006–011/013–015/017/018 | ⬜ | Jobs + applicant features |
-| FR-ADM-004–006, FR-ADM-009–011 | ⬜ | User management, job moderation |
+| FR-EMP-014/015/017/018 | ⬜ | Applicant features |
+| FR-ADM-004–006 | ⬜ | User management |
 
 ### 6.2 Non-functional (Must unless marked)
 | Requirement | Status | Where / note |
@@ -234,6 +249,7 @@ hard delete + anonymise.
 | `user` | Account: role, status, consent, verification | `20261112001631_auth` |
 | `industry` | 13 seeded industries; deactivate, never delete | `20261112120548_companies` |
 | `company` | Employer's company + verification status, reason, verified-at/by | `…_companies` |
+| `job` | Job advert + lifecycle status, reason, submitted/published/closed times | `20261112134056_jobs` |
 | `session` | Opaque session tokens | `…_auth` |
 | `account` | Credentials (Argon2id hash) | `…_auth` |
 | `verification` | Email-verification / reset tokens | `…_auth` |
@@ -243,7 +259,8 @@ hard delete + anonymise.
 
 **Database-enforced rules:** unique email (case-insensitive) · suspension needs a reason ·
 one company per employer · rejected/suspended company needs a reason · verified company has a
-verified-at time · company website must be https ·
+verified-at time · company website must be https · job salary min ≤ max · job location unless remote ·
+rejected/removed job needs a reason · published job has a published-at time · job currency GBP ·
 audit log: no UPDATE/TRUNCATE, DELETE only after 24 months, timestamp set by DB, action-name format.
 
 **Deviation from docs/09:** "unverified" is `email_verified = false`, not a status value (D-10).
@@ -267,7 +284,13 @@ Design: [10-api-design](10-api-design.md), [11-ui-flows](11-ui-flows.md).
 | `POST /api/v1/admin/companies/{id}/verify · reject · suspend · reinstate` | Admin decisions (`reject`/`suspend` need `{ reason }`) |
 | `/`, `/register`, `/check-email`, `/login`, `/forgot-password`, `/reset-password`, `/privacy` | Public / auth pages |
 | `/employer`, `/employer/company` | Employer dashboard, company profile form |
-| `/admin`, `/admin/companies`, `/admin/companies/{id}` | Admin dashboard, queue, review |
+| `/admin`, `/admin/companies`, `/admin/companies/{id}` | Admin dashboard, company queue, review |
+| `GET · POST /api/v1/employer/jobs` · `GET · PATCH /api/v1/employer/jobs/{id}` | Employer's own jobs |
+| `POST /api/v1/employer/jobs/{id}/submit · pause · resume · close` | Employer job lifecycle |
+| `GET /api/v1/admin/jobs?status=` · `GET /api/v1/admin/jobs/{id}` | Admin job queue and detail |
+| `POST /api/v1/admin/jobs/{id}/approve · reject · remove` | Admin job decisions (`reject`/`remove` need `{ reason }`) |
+| `/employer/jobs`, `/employer/jobs/new`, `/employer/jobs/{id}`, `/employer/jobs/{id}/edit` | Employer job pages |
+| `/admin/jobs`, `/admin/jobs/{id}` | Admin job queue and review |
 
 `/privacy` is a **placeholder** – real policy text is needed before launch.
 
@@ -288,7 +311,7 @@ Design: [10-api-design](10-api-design.md), [11-ui-flows](11-ui-flows.md).
 | Headers | HSTS (prod), nosniff, `X-Frame-Options: DENY`, Referrer-Policy, Permissions-Policy, COOP |
 | Rate limiting | 10/min on sign-in, sign-up, reset; 120/min default; stored in DB |
 | Suspended users | Cannot create sessions (checked on every login) |
-| Audit | Sign-up, login, failed login, reset-request, reset, company verified / rejected / suspended / reinstated; append-only in DB |
+| Audit | Sign-up, login, failed login, reset-request, reset, company verified / rejected / suspended / reinstated, job approved / rejected / removed; append-only in DB |
 | Logs | JSON, request id, sensitive keys redacted (also one level deep) |
 | Secrets | Env vars only; Zod-validated; gitleaks in CI; demo seed refuses non-local DBs |
 | Third parties | Better Auth telemetry **off**; HIBP receives only a hash prefix |
@@ -299,9 +322,9 @@ Design: [10-api-design](10-api-design.md), [11-ui-flows](11-ui-flows.md).
 
 | Layer | Tool | Count | Runs |
 |---|---|---|---|
-| Unit | Vitest | 77 | `npm test`, CI |
-| Integration (real Postgres + Mailpit) | Vitest | 35 | `npm run test:integration`, CI |
-| End-to-end (real browser, prod build) | Playwright | 16 | `npm run test:e2e`, **local only** |
+| Unit | Vitest | 94 | `npm test`, CI |
+| Integration (real Postgres + Mailpit) | Vitest | 52 | `npm run test:integration`, CI |
+| End-to-end (real browser, prod build) | Playwright | 22 | `npm run test:e2e`, **local only** |
 
 **CI pipeline** (`.github/workflows/ci.yml`, every PR and push to `main`):
 format → lint → typecheck → unit tests with coverage → build · migrations + schema-drift check +
@@ -311,6 +334,8 @@ integration tests (Postgres 17, Mailpit) · `npm audit` + gitleaks secret scan.
 - [qa/2026-11-12-auth-qa-report.md](qa/2026-11-12-auth-qa-report.md) – authentication, 11/11 passed, 17 screenshots.
 - [qa/2026-11-12-company-verification-qa-report.md](qa/2026-11-12-company-verification-qa-report.md) – company
   verification, 5/5 passed, 12 screenshots; found wrong status codes on role pages (fixed via proxy gate).
+- [qa/2026-11-12-jobs-qa-report.md](qa/2026-11-12-jobs-qa-report.md) – jobs (sprint S1), 6/6 passed,
+  13 screenshots; found late cross-field validation errors (fixed).
 
 ---
 
@@ -372,6 +397,10 @@ Product and implementation decisions:
 | D-17 | 2026-11-12 | Decision emails are best-effort after commit (failure logged, decision stands) until the worker exists | Dev |
 | D-18 | 2026-11-12 | Employers can edit a verified company without re-review; rejected → back to review; suspended → no edits | Dev |
 | D-19 | 2026-11-12 | Each role has its own home: `/employer`, `/admin`; candidates stay on `/` until job search exists | Dev |
+| D-20 | 2026-11-12 | Per-record "not yours" on logged-in pages shows the not-found screen with HTTP 200 (streaming); the API returns 404 and is the boundary. Public pages must return a real 404 or `noindex` | Dev |
+| D-21 | 2026-11-12 | Job deadline = end of the chosen day, 23:59:59 UTC (±1 h vs UK time in summer) | Dev |
+| D-22 | 2026-11-12 | Employers may draft jobs before their company is verified; submit/resume/approve need VERIFIED | Dev |
+| D-23 | 2026-11-12 | Admins can remove jobs that are pending, published or paused; removal is final | Dev |
 
 ---
 
@@ -381,6 +410,7 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
+| 2026-11-12 | *(open)* | Jobs – sprint S1 (core loop step 2): `job` table, employer job pages + lifecycle, admin approval queue, decision emails, shared action panel, QA report. Docs synced: 06 (risks R-14/R-15), 07 (progress), 09 (job as built), 10 (endpoints), 11 (build status), 12 (backlog), README (all scripts) |
 | 2026-11-12 | *(open)* | Agile methodology document (docs/12): Scrum + XP for a solo developer, DoR/DoD, backlog epics E0–E10, sprint plan S1–S6 |
 | 2026-11-12 | *(open)* | Company profile + admin verification (core loop step 1): `industry`/`company` tables, `/api/v1` foundation, employer + admin screens, decision emails, proxy role gate, QA report |
 | 2026-11-12 | #13 | Software Solution Document, `CLAUDE.md` docs rule, PR template |
@@ -418,13 +448,14 @@ Newest first. One row per merged pull request.
 | Emails sent inline | Slow SMTP slows sign-up | pg-boss worker |
 | ESLint 10 vs `eslint-config-next` peer range | Lint may break on a future update | Watch Dependabot PRs |
 | Local `npm ci` while the dev server runs can leave a broken `node_modules` | Pages 500 locally | Stop `npm run dev` before reinstalling |
+| Playwright upgrades need a matching browser | E2E can't start | Run `npx playwright install chromium` after Dependabot bumps Playwright |
 | E2E data accumulates in the local DB (test companies) | Cluttered local queue | Acceptable locally; CI will use a fresh DB |
 
 ### Next steps (in order)
 Planned as sprints S1–S6 in [docs/12 §15](12-agile-methodology.md#15-release-plan).
 
 1. ~~Company profile + admin verification queue~~ ✅
-2. Jobs: create, submit, approve, publish (FR-EMP-006–011, FR-ADM-009–011)
+2. ~~Jobs: create, submit, approve, publish~~ ✅ (sprint S1)
 3. Public job search and details (FR-CAN-006–008)
 4. Candidate profile, CV upload, apply, application history
 5. Employer applicant management; account deletion + erasure worker
