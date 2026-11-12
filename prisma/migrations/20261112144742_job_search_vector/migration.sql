@@ -1,4 +1,4 @@
--- Stored search document for jobs (docs/05-design/01-data-model.md §3.6, NFR-PERF-001).
+-- Stored search document for jobs (docs/09 §3.6, NFR-PERF-001).
 --
 -- Replaces the expression index from …_job_search: measured with 10,000 jobs, a plan that
 -- skipped that index recomputed to_tsvector for every row (keyword search p95 463 ms, limit 500).
