@@ -20,7 +20,7 @@ function layout(
 <h1 style="font-size:20px">${escapeHtml(heading)}</h1>
 <p>${body}</p>
 <p><a href="${url}" style="display:inline-block;background:#18181b;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none">${escapeHtml(action.label)}</a></p>
-<p style="font-size:13px;color:#52525b">Or paste this link into your browser:<br>${url}</p>
+<p style="font-size:13px;color:#52525b;overflow-wrap:anywhere;word-break:break-all">Or paste this link into your browser:<br>${url}</p>
 <p style="font-size:13px;color:#52525b">If you didn't ask for this, you can ignore this email.</p>
 </body></html>`;
 }

@@ -22,6 +22,16 @@ npm run db:deploy    # apply database migrations
 npm run dev          # http://localhost:3000
 ```
 
+### Demo users (local only)
+
+```bash
+npm run db:seed
+```
+
+Creates one confirmed account per role – **candidate**, **employer** and **admin** – listed with their
+shared password in [`prisma/demo-users.ts`](prisma/demo-users.ts). The seed refuses to run against
+anything but a local database.
+
 Health check: <http://localhost:3000/api/health>
 
 Emails the app sends locally (sign-up confirmation, password reset) land in **Mailpit**:
