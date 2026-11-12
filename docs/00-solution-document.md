@@ -1,0 +1,421 @@
+# JobConnect – Software Solution Document
+
+> **Living document.** This is the single place that describes what JobConnect is, what is built,
+> how it is built, what was decided and what changed. It is updated in the **same pull request** as
+> any change to the project (see §14). Detailed designs live in the numbered documents it links to.
+
+| Field | Value |
+|---|---|
+| Version | 1.0 |
+| Status | Current – reflects `main` at `cf3c387` (PR #11) |
+| Phase | 3 – Build (MVP, release 0.1) |
+| Owner | Product Owner |
+| Last updated | 2026-11-12 |
+| Repository | https://github.com/muradkhan995/jobconnect |
+
+---
+
+## Contents
+1. [Status at a glance](#1-status-at-a-glance)
+2. [Solution overview](#2-solution-overview)
+3. [Architecture as built](#3-architecture-as-built)
+4. [Technology stack (pinned versions)](#4-technology-stack-pinned-versions)
+5. [Code map](#5-code-map)
+6. [Requirements traceability](#6-requirements-traceability)
+7. [Data model as built](#7-data-model-as-built)
+8. [API and pages as built](#8-api-and-pages-as-built)
+9. [Security and privacy controls](#9-security-and-privacy-controls)
+10. [Quality: tests, CI and QA](#10-quality-tests-ci-and-qa)
+11. [Environments, running and demo users](#11-environments-running-and-demo-users)
+12. [Decision log](#12-decision-log)
+13. [Change log](#13-change-log)
+14. [Open questions, risks and next steps](#14-open-questions-risks-and-next-steps)
+15. [How this document is maintained](#15-how-this-document-is-maintained)
+16. [Document index](#16-document-index)
+
+---
+
+## 1. Status at a glance
+
+| Area | Status |
+|---|---|
+| Phase 1 – Discovery (docs 01–07) | ✅ Complete |
+| Phase 2 – Design (docs 08–11) | ✅ Complete; 3 open questions (§14) |
+| Phase 3 – Build | 🟡 In progress – foundation + authentication done |
+| `main` CI | ✅ Green (lint, types, unit, integration, build, audit, secret scan) |
+| Deployed | ❌ Not yet – runs locally only |
+| MVP core loop (docs/07 §2) | Step 0 of 5: users can register and log in; no companies, jobs or applications yet |
+
+**Working today:** sign up as candidate or employer, email confirmation, log in/out, password reset,
+demo accounts for every role, health check, audit log.
+
+**Next feature:** company profile + admin verification queue (core loop step 1).
+
+---
+
+## 2. Solution overview
+
+**Problem.** Candidates rarely hear back after applying; employers lose applications in email; fake job
+adverts erode trust. ([01-project-vision](01-project-vision.md))
+
+**Solution.** A job marketplace where only **verified employers** can publish jobs, and every
+application shows its **real status** from submission to decision. Role-specific AI assistants come
+later (release 1.1+); humans always make hiring decisions.
+
+| Role | Main jobs | Persona |
+|---|---|---|
+| Candidate | Search, apply, track applications | Amira ([02](02-user-personas.md)) |
+| Employer | Company profile, post jobs, manage applicants | David |
+| Administrator | Verify companies, approve jobs, moderate | Sophie |
+
+**Constraints:** one part-time developer · < £20/month · UK/EU hosting and GDPR · TypeScript strict ·
+every change via pull request with passing CI. ([06-scope-and-risks](06-scope-and-risks.md))
+
+**Releases:** 0.1 MVP (core loop) → 1.0 (all Must + Should) → 1.1+ (AI agents). ([07](07-mvp-definition.md))
+
+---
+
+## 3. Architecture as built
+
+A **modular monolith**: one Next.js application (UI + API + later a background worker) in one Docker
+image, PostgreSQL for all state. Full design: [08-system-architecture](08-system-architecture.md).
+
+```
+Browser ──HTTPS──▶ Next.js app
+                    │
+                    ├─ src/proxy.ts ─────── request id · CSRF origin check · per-request CSP nonce
+                    ├─ next.config.ts ───── static security headers (HSTS, nosniff, frame, referrer…)
+                    │
+                    ├─ src/app/ ─────────── pages (React Server Components) + route handlers
+                    │    ├─ (auth)/…           register, login, check-email, forgot/reset password
+                    │    ├─ api/auth/[...all]  Better Auth endpoints
+                    │    └─ api/health         DB ping → 200 / 503
+                    │
+                    ├─ src/modules/ ─────── business modules (auth, audit; more per feature)
+                    ├─ src/lib/ ─────────── db, auth, env, email, logger, security helpers
+                    │
+                    ├──▶ PostgreSQL 17 ─── data, sessions, rate limits, append-only audit log
+                    └──▶ SMTP ──────────── Mailpit locally; transactional provider in production
+```
+
+**Built so far vs. planned:** the background worker (pg-boss), object storage (CVs), Sentry and the
+production deployment are designed but **not built yet**. Emails are currently sent inline.
+
+---
+
+## 4. Technology stack (pinned versions)
+
+| Concern | Technology | Version | Notes |
+|---|---|---|---|
+| Runtime | Node.js | 22 (`.nvmrc`) | |
+| Framework | Next.js (App Router, Cache Components) + React | 16.4.6 / 19.3.1 | Every route renders per request (ADR-008) |
+| Language | TypeScript (strict, `noUncheckedIndexedAccess`) | 5.9.3 | TS 7 blocked: typescript-eslint unsupported (D-14) |
+| Styling | Tailwind CSS | 4.3.5 | |
+| Database | PostgreSQL | 17 (Docker locally) | Match production major |
+| ORM | Prisma + `@prisma/adapter-pg` | 7.10.1 | Not 8.0 RC (D-08) |
+| Auth | Better Auth | 1.7.18 | DB sessions, telemetry off |
+| Password hashing | `@node-rs/argon2` (Argon2id) | 2.2.2 | m=19456, t=2, p=1 (OWASP) |
+| Validation | Zod | 4.6.7 | |
+| Logging | pino (JSON) | 10.4.0 | PII redaction |
+| Email | nodemailer → SMTP | 10.4.0 | Mailpit v1.32.0 locally |
+| Unit / integration tests | Vitest | 5.1 | Integration against real Postgres + Mailpit |
+| E2E tests | Playwright (Chromium) | 1.64.1 | Against a production build |
+| Lint / format | ESLint + Prettier | 10.14 / 3.10 | Zero warnings allowed |
+| CI | GitHub Actions | – | Actions pinned by commit SHA |
+| Dependency updates | Dependabot | – | Weekly; majors of `typescript`, `@types/node` ignored |
+
+**Dependency policy:** new dependencies are pinned to a release **at least two weeks old**; Dependabot
+proposes newer ones as pull requests, merged **only after CI on the PR is green**.
+
+---
+
+## 5. Code map
+
+| Path | Responsibility |
+|---|---|
+| `src/proxy.ts` | Runs before every request: request id, CSRF check, CSP nonce |
+| `src/app/` | Pages and route handlers only – no business logic |
+| `src/modules/auth/` | Sign-up rules, password hashing, emails, error messages, session helper, auth forms |
+| `src/modules/audit/` | `recordAudit()` – typed actions, transaction-aware, rejects personal data |
+| `src/lib/auth.ts` | Better Auth configuration (single place for all auth policy) |
+| `src/lib/db.ts` | Lazy, process-wide Prisma client |
+| `src/lib/env.ts` | Zod-validated environment (names only in errors, never values) |
+| `src/lib/security/` | CSP builder, CSRF origin check |
+| `src/lib/http/` | RFC 9457 problem responses, request id |
+| `src/lib/logger.ts`, `privacy.ts` | JSON logger; shared list of sensitive field names |
+| `src/components/` | Shared UI: button, text field, alert, auth card, site header |
+| `prisma/` | Schema, migrations, demo-user seed |
+| `e2e/` | Playwright tests, helpers, global setup |
+| `docs/` | This document, discovery/design docs, QA reports |
+
+**Rules:** route handler → service → policy → repository (docs/08 §2.1); modules talk only through
+each other's public service functions; status changes are guarded updates (docs/09 §4).
+
+---
+
+## 6. Requirements traceability
+
+Legend: ✅ done · 🟡 partial · ⬜ not started · ➖ not in MVP
+
+### 6.1 Functional – MVP scope
+| Requirement | Status | Where / note |
+|---|---|---|
+| FR-AUTH-001 Register (candidate / employer) | ✅ | `/register`, E2E 02–04 |
+| FR-AUTH-002 No admin self-registration | ✅ | `signup-rules.ts`; integration test |
+| FR-AUTH-003 Password policy (≥ 12, breached list) | ✅ | Better Auth + HIBP plugin |
+| FR-AUTH-004 No duplicate email | ✅ | Unique `citext`; enumeration-safe response (D-11) |
+| FR-AUTH-005 Verification link, 24 h | ✅ | E2E 06–07 |
+| FR-AUTH-006 Login only after verification | ✅ | E2E 05 |
+| FR-AUTH-007 Log out | ✅ | E2E 09–10 |
+| FR-AUTH-008 Password reset, time-limited | ✅ | 1 h link, all sessions revoked; E2E 11–14 |
+| FR-AUTH-009 Temporary block after 5 failures (S) | 🟡 | Per-IP rate limit (10/min) only; no per-account lockout |
+| FR-ADM-001 Admin created only by script | 🟡 | Local demo seed only; production admin script ⬜ |
+| FR-ADM-019 Audit entries | 🟡 | Table + auth events done; admin actions come with admin features |
+| FR-ADM-021 Audit log can't be edited/deleted | ✅ | DB triggers; integration tests |
+| FR-CAN-001/005/006/007/008/010–013/017/018 | ⬜ | Candidate features |
+| FR-EMP-001/003/004/006–011/013–015/017/018 | ⬜ | Employer features |
+| FR-ADM-004–011, FR-ADM-014 | ⬜ | Admin features |
+
+### 6.2 Non-functional (Must unless marked)
+| Requirement | Status | Where / note |
+|---|---|---|
+| SEC-001 Argon2id / bcrypt | ✅ | `password.ts` |
+| SEC-002 HTTPS / TLS | 🟡 | HSTS header ready; needs deployment |
+| SEC-003 Server-side auth + ownership checks | 🟡 | Auth done; policy layer arrives with first business endpoints |
+| SEC-004 Input validation, parameterised queries | 🟡 | Prisma everywhere; Zod per endpoint as endpoints are added |
+| SEC-005 Output encoding + CSP | ✅ | Nonce CSP; real-browser check (E2E 18) |
+| SEC-006 Cookies + CSRF | ✅ | HttpOnly/Secure/SameSite; Origin check |
+| SEC-007 Rate limiting | ✅ | DB-backed; 10/min on auth endpoints |
+| SEC-008 Private files, signed URLs | ⬜ | With CV upload |
+| SEC-009 Malware scan (S) | ⬜ | Release 1.0 |
+| SEC-010 No secrets in Git | ✅ | `.env*` ignored; gitleaks in CI |
+| SEC-011 Dependency scanning (S) | ✅ | `npm audit` + Dependabot |
+| PRV-002 Consent recorded | ✅ | Version + timestamp on `user` |
+| PRV-003 Erasure ≤ 30 days | ⬜ | With account deletion + worker |
+| PRV-004 No PII in logs | ✅ | Redaction + audit metadata guard |
+| PRV-005 UK/EU hosting (S) | ⬜ | Deployment |
+| SCAL-002 Stateless servers (S) | ✅ | Sessions + rate limits in DB |
+| REL-002 Daily backups + tested restore | ⬜ | Deployment |
+| OBS-001 Health check | ✅ | `/api/health` |
+| OBS-002 JSON logs + request id (S) | ✅ | pino + `x-request-id` |
+| OBS-003 Error monitoring (S) | ⬜ | Sentry |
+| MNT-001 TS strict + lint in CI | ✅ | |
+| MNT-002 PR + passing CI | 🟡 | Practised; **branch protection not enforced on GitHub** |
+| MNT-003 Tests per requirement (S) | 🟡 | Done for everything built so far |
+| MNT-004 OpenAPI (S) | ⬜ | With first `/api/v1` endpoints |
+| UX-001 Responsive 360–1920 px | 🟡 | Auth pages checked at 360 px |
+| UX-002 WCAG 2.2 AA (S) | 🟡 | Labels, focus, live regions; no screen-reader audit yet |
+| UX-004 Latest 2 versions of 4 browsers | 🟡 | Chromium only |
+
+---
+
+## 7. Data model as built
+
+Design: [09-data-model](09-data-model.md). Conventions: UUIDv7 ids, `timestamptz` in UTC, `citext` emails,
+hard delete + anonymise.
+
+| Table | Purpose | Migration |
+|---|---|---|
+| `user` | Account: role, status, consent, verification | `20261112001631_auth` |
+| `session` | Opaque session tokens | `…_auth` |
+| `account` | Credentials (Argon2id hash) | `…_auth` |
+| `verification` | Email-verification / reset tokens | `…_auth` |
+| `rate_limit` | Rate-limit counters (shared across instances) | `…_auth` |
+| `audit_log` | Append-only audit trail; no foreign keys | `20261112000352_audit_log` |
+| *(extensions)* | `citext`, database timezone UTC | `20261111000000_init` |
+
+**Database-enforced rules:** unique email (case-insensitive) · suspension needs a reason ·
+audit log: no UPDATE/TRUNCATE, DELETE only after 24 months, timestamp set by DB, action-name format.
+
+**Deviation from docs/09:** "unverified" is `email_verified = false`, not a status value (D-10).
+
+---
+
+## 8. API and pages as built
+
+Design: [10-api-design](10-api-design.md), [11-ui-flows](11-ui-flows.md).
+
+| Endpoint / page | Purpose |
+|---|---|
+| `POST /api/auth/sign-up/email` · `sign-in/email` · `sign-out` | Account lifecycle |
+| `GET /api/auth/verify-email` | Email confirmation link |
+| `POST /api/auth/request-password-reset` · `reset-password` | Password reset |
+| `GET /api/auth/get-session` | Current session |
+| `GET /api/health` | `200 {"status":"ok"}` / `503 {"status":"error"}` |
+| `/`, `/register`, `/check-email`, `/login`, `/forgot-password`, `/reset-password`, `/privacy` | Pages |
+
+`/privacy` is a **placeholder** – real policy text is needed before launch. No `/api/v1` endpoints yet.
+
+---
+
+## 9. Security and privacy controls
+
+| Control | Implementation |
+|---|---|
+| Passwords | Argon2id (OWASP params), ≥ 12 chars, breached-password check (5-char hash prefix sent) |
+| Sessions | DB sessions, `HttpOnly; SameSite=Lax`, `Secure` in production; revoked on password reset |
+| Account enumeration | Sign-up and password-reset responses identical whether or not the email exists |
+| CSRF | `Origin` must equal our origin on every unsafe `/api/*` request (403 problem+json) |
+| XSS | Per-request nonce CSP, `strict-dynamic`, no `unsafe-inline` scripts in production |
+| Headers | HSTS (prod), nosniff, `X-Frame-Options: DENY`, Referrer-Policy, Permissions-Policy, COOP |
+| Rate limiting | 10/min on sign-in, sign-up, reset; 120/min default; stored in DB |
+| Suspended users | Cannot create sessions (checked on every login) |
+| Audit | Sign-up, login, failed login, reset-request, reset; append-only in DB |
+| Logs | JSON, request id, sensitive keys redacted (also one level deep) |
+| Secrets | Env vars only; Zod-validated; gitleaks in CI; demo seed refuses non-local DBs |
+| Third parties | Better Auth telemetry **off**; HIBP receives only a hash prefix |
+
+---
+
+## 10. Quality: tests, CI and QA
+
+| Layer | Tool | Count | Runs |
+|---|---|---|---|
+| Unit | Vitest | 64 | `npm test`, CI |
+| Integration (real Postgres + Mailpit) | Vitest | 21 | `npm run test:integration`, CI |
+| End-to-end (real browser, prod build) | Playwright | 11 | `npm run test:e2e`, **local only** |
+
+**CI pipeline** (`.github/workflows/ci.yml`, every PR and push to `main`):
+format → lint → typecheck → unit tests with coverage → build · migrations + schema-drift check +
+integration tests (Postgres 17, Mailpit) · `npm audit` + gitleaks secret scan.
+
+**QA reports:** [qa/2026-11-12-auth-qa-report.md](qa/2026-11-12-auth-qa-report.md) – authentication,
+11/11 passed, 17 screenshots, 2 product bugs found and fixed.
+
+---
+
+## 11. Environments, running and demo users
+
+| Environment | Where | Status |
+|---|---|---|
+| Local | Docker Compose (Postgres 17, Mailpit) + `npm run dev` | ✅ |
+| CI | GitHub Actions (Postgres + Mailpit services) | ✅ |
+| Staging | – | Not planned for MVP (PO decision) |
+| Production | Fly.io or Render (decision pending) + Neon + R2 + Resend + Sentry | ⬜ |
+
+```bash
+npm install && cp .env.example .env.local      # then set BETTER_AUTH_SECRET
+npm run db:up && npm run db:deploy && npm run db:seed
+npm run dev                                     # http://localhost:3000 · inbox http://localhost:8025
+```
+
+**Demo users** (local only): candidate, employer and admin – emails and the shared password are in
+[`prisma/demo-users.ts`](../prisma/demo-users.ts). Recreate with `npm run db:seed`.
+
+---
+
+## 12. Decision log
+
+Architecture decisions (detail in [08 §9](08-system-architecture.md#9-architecture-decision-records-summary)):
+
+| ID | Decision |
+|---|---|
+| ADR-001 | Modular monolith on Next.js |
+| ADR-002 | PostgreSQL + Prisma |
+| ADR-003 | Postgres full-text search, no search engine |
+| ADR-004 | Better Auth with database sessions |
+| ADR-005 | pg-boss queue in Postgres (not built yet) |
+| ADR-006 | Docker container hosting in the UK (host TBD) |
+| ADR-007 | S3-compatible private storage for files |
+| ADR-008 | Nonce CSP; every route renders per request |
+
+Product and implementation decisions:
+
+| ID | Date | Decision | By |
+|---|---|---|---|
+| D-01 | 2026-11-11 | AI agents are "Could" – after the core marketplace | PO |
+| D-02 | 2026-11-11 | Job location = free text + `work_mode` (on-site/hybrid/remote) | PO |
+| D-03 | 2026-11-11 | Salary has a period (year / day / hour) | PO |
+| D-04 | 2026-11-11 | Job search is public; login needed to apply | PO |
+| D-05 | 2026-11-11 | Candidate email/phone visible to employers from SHORTLISTED only | PO |
+| D-06 | 2026-11-11 | Audit entries deleted after 24 months | PO |
+| D-07 | 2026-11-11 | Employer account deletion via support only (MVP); no staging env; candidate mobile tab bar | PO |
+| D-08 | 2026-11-11 | Prisma 7.10 stable, not the 8.0 release candidate | Dev |
+| D-09 | 2026-11-12 | New dependencies pinned to releases ≥ 2 weeks old | Dev |
+| D-10 | 2026-11-12 | "Unverified" = `email_verified = false`, not a status | Dev |
+| D-11 | 2026-11-12 | No account enumeration: duplicate sign-up looks like success (replaces `409 EMAIL_TAKEN`) | Dev |
+| D-12 | 2026-11-12 | Display name stored on `user` (required by Better Auth) | Dev |
+| D-13 | 2026-11-12 | E2E tests run against a production build without the external HIBP check | Dev |
+| D-14 | 2026-11-12 | Stay on TypeScript 5.9 until typescript-eslint supports TS 7 | Dev |
+
+---
+
+## 13. Change log
+
+Newest first. One row per merged pull request.
+
+| Date | PR | Change |
+|---|---|---|
+| 2026-11-12 | #11 | Demo users (`db:seed`), Playwright E2E suite, auth QA report; fixed email link wrapping and admin home text |
+| 2026-11-12 | #10 | Reverted TypeScript 7 → 5.9 (lint crashed); Dependabot ignores TS majors |
+| 2026-11-12 | #8 | Dependabot: minor/patch updates (Better Auth 1.7.18, nodemailer 10.4, React 19.3.1, …) |
+| 2026-11-12 | #4 | Dependabot: TypeScript 7 (**broke lint on `main`**, reverted by #10) |
+| 2026-11-12 | #7 | Security baseline (proxy, CSP, CSRF, headers, logging), append-only audit log, authentication UI |
+| 2026-11-12 | #3 | Dependabot: ESLint 10 |
+| 2026-11-11 | #6 | Prisma 7 + PostgreSQL, init migration (citext, UTC), DB health check, integration CI job |
+| 2026-11-11 | #1 | Next.js scaffold, tooling, CI, Dependabot |
+| 2026-11-11 | – | Phase 2 design docs (08–11) and PO decisions |
+| 2026-11-11 | – | Phase 1 discovery docs (01–07) |
+
+---
+
+## 14. Open questions, risks and next steps
+
+### Open questions
+| # | Question | Owner |
+|---|---|---|
+| Q1 | Production app host: Fly.io (~£3–6/mo) or Render free tier | PO |
+| Q2 | Production domain name (needed for email SPF/DKIM/DMARC) | PO |
+| Q3 | Brand / logo | PO |
+| Q4 | If the breach-check service (HIBP) is down: block sign-up (current) or allow with a warning? | PO |
+| Q5 | Enable GitHub branch protection (require PR + green CI on `main`)? | PO |
+
+### Known gaps and risks
+| Gap | Impact | Plan |
+|---|---|---|
+| E2E tests not in CI | Browser regressions caught only locally | Add Playwright job |
+| No branch protection | A red PR can be merged (happened with #4) | Q5 |
+| Privacy policy is a placeholder | Launch blocker (GDPR) | Write before release |
+| Emails sent inline | Slow SMTP slows sign-up | pg-boss worker |
+| ESLint 10 vs `eslint-config-next` peer range | Lint may break on a future update | Watch Dependabot PRs |
+
+### Next steps (in order)
+1. Company profile + admin verification queue (FR-EMP-001/003/004, FR-ADM-007/008)
+2. Jobs: create, submit, approve, publish (FR-EMP-006–011, FR-ADM-009–011)
+3. Public job search and details (FR-CAN-006–008)
+4. Candidate profile, CV upload, apply, application history
+5. Employer applicant management; account deletion + erasure worker
+6. Deployment, backups, Sentry; E2E in CI
+
+---
+
+## 15. How this document is maintained
+
+- **Every pull request that changes the project updates this document** in the same PR:
+  status (§1), traceability (§6), as-built sections (§3–§11) when affected, decision log (§12),
+  change log (§13) and open questions (§14).
+- Detailed design changes go into the numbered document they belong to (e.g. a new table in
+  docs/09), and this document links to them.
+- The pull-request template includes a checkbox for this; `CLAUDE.md` instructs the AI assistant to
+  do the same.
+- Bump **Version** (minor for content, major for restructuring) and **Last updated** on every change.
+
+---
+
+## 16. Document index
+
+| Doc | Content |
+|---|---|
+| [00-solution-document](00-solution-document.md) | **This document** – overview, status, decisions, changes |
+| [01-project-vision](01-project-vision.md) | Problem, vision, roles, stakeholders |
+| [02-user-personas](02-user-personas.md) | Amira, David, Sophie |
+| [03-functional-requirements](03-functional-requirements.md) | FR-* (MoSCoW) |
+| [04-non-functional-requirements](04-non-functional-requirements.md) | NFR-* |
+| [05-business-rules](05-business-rules.md) | Lifecycles, permission matrix |
+| [06-scope-and-risks](06-scope-and-risks.md) | Scope, constraints, risk register |
+| [07-mvp-definition](07-mvp-definition.md) | MVP feature set and acceptance criteria |
+| [08-system-architecture](08-system-architecture.md) | Architecture, hosting, ADRs |
+| [09-data-model](09-data-model.md) | Tables, constraints, indexes, GDPR deletion |
+| [10-api-design](10-api-design.md) | Endpoints, errors, pagination |
+| [11-ui-flows](11-ui-flows.md) | Site map, journeys, wireframes |
+| [qa/](qa/) | QA reports and screenshots |
