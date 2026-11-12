@@ -80,7 +80,7 @@ export const JobInput = z
       .string()
       .trim()
       .max(120, "Location must be at most 120 characters.")
-      .optional()
+      .nullish()
       .transform((v) => (v ? v : null)),
     jobType: z.enum(JOB_TYPES, "Choose a job type."),
     experienceLevel: z.enum(EXPERIENCE_LEVELS, "Choose an experience level."),

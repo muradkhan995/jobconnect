@@ -23,8 +23,8 @@ flowchart TB
     forgot["/forgot-password"] --> reset["/reset-password"]
   end
   subgraph Candidate
-    capps["/candidate/applications"]:::planned
-    cprofile["/candidate/profile · /candidate/cvs"]:::planned
+    capps["/candidate/applications"] --> capp["/candidate/applications/[id]"]
+    cprofile["/candidate/profile (profile + CVs)"]
     account["/account"]:::planned
   end
   subgraph Employer["Employer (/employer/* – role-gated)"]
@@ -60,11 +60,11 @@ flowchart LR
 | Role | Header links (left) | Header (right) |
 |---|---|---|
 | Visitor | – | Find jobs · Log in · **Sign up** |
-| Candidate | Find jobs | name · Candidate · Log out |
+| Candidate | Find jobs · My applications · Profile & CVs (phones: bottom tab bar Find jobs · Applied · Me) | name · Candidate · Log out |
 | Employer | Dashboard · Jobs · Company | name · Employer · Log out |
 | Admin | Dashboard · Companies · Jobs | name · Admin · Log out |
 
-Planned: candidate bottom tab bar on phones (Find jobs · Applied · Me) – [01-ui-flows.md §2.1](01-ui-flows.md#21-navigation-per-role).
+Phones: candidates get the bottom tab bar (D-07, built S3); employers and admins get their links as a row under the header.
 
 ## 4. Access rules (who can open what)
 
@@ -72,5 +72,6 @@ Planned: candidate bottom tab bar on phones (Find jobs · Applied · Me) – [01
 |---|---|---|---|---|---|
 | `/`, `/jobs`, `/jobs/[id]`, auth pages | ✅ | ✅ | ✅ | ✅ | – |
 | `/employer/*` | → login | 404 | ✅ own data only | 404 | proxy gate + page + service |
+| `/candidate/*` | → login | ✅ own data only | 404 | 404 | proxy gate + page + service |
 | `/admin/*` | → login | 404 | 404 | ✅ | proxy gate + page + service |
 | Another employer's job page | → login | 404 | not-found screen (D-20) | 404 | service ownership |

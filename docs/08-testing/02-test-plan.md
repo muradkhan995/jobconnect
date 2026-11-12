@@ -17,7 +17,7 @@ In: everything in the MVP feature set. Out: Could items, AI agents, browsers oth
 | Company verification | Ownership, lifecycle, concurrent decisions, proxy status codes | [company QA report](qa-reports/2026-11-12-company-verification-qa-report.md) | ✅ |
 | S1 Jobs | Lifecycle, material edits, 1–90 day window, cross-company 404 | [jobs QA report](qa-reports/2026-11-12-jobs-qa-report.md) | ✅ |
 | S2 Search | Visibility rule, stemming, filters, pagination, real 404, p95 | [search QA report](qa-reports/2026-11-12-job-search-qa-report.md) | ✅ |
-| S3 Profile, CVs, apply | File type by content, size, 5-CV limit, signed URLs, apply once, deadline, snapshot | – | ⬜ |
+| S3 Profile, CVs, apply | File type by content, size, 5-CV limit, signed URLs, apply once, deadline, snapshot | [candidate apply QA report](qa-reports/2026-11-12-candidate-apply-qa-report.md) | ✅ |
 | S4 Applicants | "Employer can't see another company's applicants", forward-only status, contact details from SHORTLISTED | – | ⬜ |
 | S5 GDPR | Erasure ≤ 30 days, anonymisation, suspension hides jobs | – | ⬜ |
 | S6 Release | Full core-loop E2E in CI, backup restore, Firefox/Safari/Edge, accessibility audit | – | ⬜ |
@@ -28,7 +28,7 @@ In: everything in the MVP feature set. Out: Could items, AI agents, browsers oth
 |---|---|---|
 | Full core loop as one automated E2E | `e2e/core-loop.spec.ts` | ⬜ S4 |
 | Employer cannot see another company's applicants | integration + E2E | ⬜ S4 |
-| Candidate cannot see another candidate's applications | integration + E2E | ⬜ S3 |
+| Candidate cannot see another candidate's applications | integration + E2E 88 | ✅ |
 | All MVP requirements have passing tests | [traceability matrix](../03-requirements/06-traceability-matrix.md) | 🟡 |
 | CI passes on main | GitHub Actions | ✅ |
 | Deployed over HTTPS | smoke test | ⬜ S6 |

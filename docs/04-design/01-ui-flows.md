@@ -257,10 +257,10 @@ Updated with every feature PR (see docs/00 §8 for endpoints).
 | J2 – Admin verifies company / approves job | `/admin`, `/admin/companies`, `/admin/companies/[id]`, `/admin/jobs`, `/admin/jobs/[id]` | ✅ Built |
 | J3 – Employer posts a job | `/employer/jobs`, `/employer/jobs/new`, `/employer/jobs/[id]`, `/employer/jobs/[id]/edit` | ✅ Built (QA: docs/08-testing/qa-reports/…jobs) |
 | J4 – Candidate finds a job | `/` (search box), `/jobs`, `/jobs/[id]` | ✅ Built (QA: docs/08-testing/qa-reports/…job-search) – works without JavaScript |
-| J4 – Candidate applies | apply sheet, `/candidate/*` | ⬜ Sprint S3 |
+| J4 – Candidate applies | apply panel on `/jobs/[id]`, `/candidate/profile`, `/candidate/applications`, `/candidate/applications/[id]` | ✅ Built (QA: docs/08-testing/qa-reports/…candidate-apply) |
 | J5 – Employer reviews applicants | `/employer/jobs/[id]/applicants`, `/employer/applications/[id]` | ⬜ Sprint S4 |
 | Admin users, account deletion | `/admin/users*`, `/account` | ⬜ Sprint S5 |
-| Candidate mobile tab bar (§2.1) | – | ⬜ With candidate screens |
+| Candidate mobile tab bar (§2.1) | `components/candidate-tab-bar.tsx` (Find jobs · Applied · Me) | ✅ Built; employers/admins get a link row on phones |
 
 **Implemented as specified:** status labels (§5.1–5.2), confirmation dialogs naming the consequence (P5),
 errors next to fields and all shown at once (§6), 360 px layouts for auth pages (P1).

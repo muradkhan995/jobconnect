@@ -46,9 +46,10 @@ model User {
   createdAt            DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt            DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  sessions Session[]
-  accounts Account[]
-  company  Company?
+  sessions         Session[]
+  accounts         Account[]
+  company          Company?
+  candidateProfile CandidateProfile?
 
   @@index([role, status])
   @@map("user")
@@ -261,11 +262,118 @@ model Job {
   createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt       DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  company  Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  industry Industry @relation(fields: [industryId], references: [id], onDelete: Restrict)
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  industry     Industry      @relation(fields: [industryId], references: [id], onDelete: Restrict)
+  applications Application[]
 
   @@index([companyId, createdAt(sort: Desc)])
   @@map("job")
+}
+
+/// A candidate's profile (docs/05-design/01-data-model.md §3.2). Deleted with the user.
+model CandidateProfile {
+  userId    String   @id @map("user_id") @db.Uuid
+  fullName  String   @map("full_name")
+  headline  String?
+  location  String?
+  /// Shown to employers only from SHORTLISTED onward (BR-APP-010, sprint S4).
+  phone     String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cvs          Cv[]
+  applications Application[]
+
+  @@map("candidate_profile")
+}
+
+/// Malware scan state (NFR-SEC-009 – scanner arrives in Release 1.0; MVP writes SKIPPED).
+enum ScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+  SKIPPED
+
+  @@map("scan_status")
+}
+
+/// An uploaded CV (FR-CAN-005): max 5 per candidate, PDF/DOCX by content, ≤ 5 MB – CHECKs.
+/// The file lives in private object storage under a random key; never served directly.
+model Cv {
+  id               String     @id @db.Uuid
+  candidateId      String     @map("candidate_id") @db.Uuid
+  storageKey       String     @unique @map("storage_key")
+  originalFilename String     @map("original_filename")
+  mimeType         String     @map("mime_type")
+  sizeBytes        Int        @map("size_bytes")
+  scanStatus       ScanStatus @default(SKIPPED) @map("scan_status")
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  candidate CandidateProfile @relation(fields: [candidateId], references: [userId], onDelete: Cascade)
+
+  @@index([candidateId, createdAt(sort: Desc)])
+  @@map("cv")
+}
+
+/// Application lifecycle (BR §4).
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  REJECTED
+  WITHDRAWN
+
+  @@map("application_status")
+}
+
+/// One candidate's application to one job (docs/05-design/01-data-model.md §3.7).
+/// UNIQUE (job_id, candidate_id): once per job, ever (BR-APP-002). The CV is a snapshot copy (BR-APP-003).
+model Application {
+  id                 String            @id @db.Uuid
+  jobId              String            @map("job_id") @db.Uuid
+  /// NULL after anonymisation (BR-USR-003, BR-APP-009).
+  candidateId        String?           @map("candidate_id") @db.Uuid
+  cvStorageKey       String?           @map("cv_storage_key")
+  cvOriginalFilename String?           @map("cv_original_filename")
+  cvMimeType         String?           @map("cv_mime_type")
+  cvSizeBytes        Int?              @map("cv_size_bytes")
+  coverLetter        String?           @map("cover_letter")
+  status             ApplicationStatus @default(APPLIED)
+  appliedAt          DateTime          @default(now()) @map("applied_at") @db.Timestamptz(3)
+  anonymisedAt       DateTime?         @map("anonymised_at") @db.Timestamptz(3)
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  job       Job                        @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  candidate CandidateProfile?          @relation(fields: [candidateId], references: [userId], onDelete: SetNull)
+  history   ApplicationStatusHistory[]
+
+  @@unique([jobId, candidateId])
+  @@index([candidateId, appliedAt(sort: Desc)])
+  @@index([jobId, appliedAt(sort: Desc)])
+  @@map("application")
+}
+
+/// Every status change of an application (BR-APP-007).
+model ApplicationStatusHistory {
+  id              String             @id @db.Uuid
+  applicationId   String             @map("application_id") @db.Uuid
+  fromStatus      ApplicationStatus? @map("from_status")
+  toStatus        ApplicationStatus  @map("to_status")
+  /// No FK: survives the user's erasure.
+  changedByUserId String?            @map("changed_by_user_id") @db.Uuid
+  /// Optional rejection message shown to the candidate (FR-EMP-018).
+  message         String?
+  changedAt       DateTime           @default(now()) @map("changed_at") @db.Timestamptz(3)
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, changedAt])
+  @@map("application_status_history")
 }
 
 /// Append-only record of admin actions and security events (FR-ADM-019/021, docs/05-design/01-data-model.md §3.10).

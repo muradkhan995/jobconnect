@@ -106,12 +106,12 @@ Paths are Better Auth's defaults; we don't rename them. Signup role and consent 
 ### 4.3 Candidate profile & CVs – `/api/v1/candidate`
 | Method & path | Role | Requirement | Notes |
 |---|---|---|---|
-| `GET /candidate/profile` | C | FR-CAN-001 | |
-| `PUT /candidate/profile` | C | FR-CAN-001 | Creates or replaces: `fullName`, `headline`, `location`, `phone` |
-| `GET /candidate/cvs` | C | FR-CAN-005 | Metadata only |
-| `POST /candidate/cvs` | C | FR-CAN-005 | `multipart/form-data`, field `file`; 413/415/422 `CV_LIMIT_REACHED` |
-| `DELETE /candidate/cvs/{cvId}` | C | FR-CAN-005 | Submitted applications keep their snapshot (BR-APP-003) |
-| `GET /candidate/cvs/{cvId}/download-url` | C | NFR-SEC-008 | `{ url, expiresAt }` – signed URL valid 5 min |
+| `GET /candidate/profile` | C | FR-CAN-001 | `404` until created. ✅ built |
+| `PUT /candidate/profile` | C | FR-CAN-001 | Creates or replaces: `fullName`, `headline`, `location`, `phone` (optional fields accept `null`). ✅ built |
+| `GET /candidate/cvs` | C | FR-CAN-005 | Metadata only. ✅ built |
+| `POST /candidate/cvs` | C | FR-CAN-005 | `multipart/form-data`, field `file`; type from content; `413 FILE_TOO_LARGE`, `415 UNSUPPORTED_FILE_TYPE`, `422 CV_LIMIT_REACHED`, `422 PROFILE_REQUIRED`. ✅ built |
+| `DELETE /candidate/cvs/{cvId}` | C | FR-CAN-005 | `204`; submitted applications keep their snapshot (BR-APP-003). ✅ built |
+| `GET /candidate/cvs/{cvId}/download-url` | C | NFR-SEC-008 | `{ url, expiresAt }` – signed URL valid 5 min (enforced by R2; s3mock doesn't check signatures). ✅ built |
 
 ### 4.4 Jobs – public – `/api/v1/jobs`
 | Method & path | Role | Requirement | Notes |
@@ -123,9 +123,9 @@ Paths are Better Auth's defaults; we don't rename them. Signup role and consent 
 ### 4.5 Applications – candidate – `/api/v1/candidate/applications`
 | Method & path | Role | Requirement | Notes |
 |---|---|---|---|
-| `POST /candidate/applications` | C | FR-CAN-010/011/012, BR-APP-001/003 | Body `{ jobId, cvId, coverLetter? }`. Copies the CV snapshot. `409 ALREADY_APPLIED`, `422 DEADLINE_PASSED` |
-| `GET /candidate/applications` | C | FR-CAN-013 | Own applications with job title, company, current status |
-| `GET /candidate/applications/{id}` | C | FR-CAN-013 | Includes status history and any rejection message; **never** internal notes |
+| `POST /candidate/applications` | C | FR-CAN-010/011/012, BR-APP-001/003 | Body `{ jobId, cvId, coverLetter? }`. Copies the CV snapshot. `409 ALREADY_APPLIED`, `422 DEADLINE_PASSED`, `422 PROFILE_REQUIRED`, `404` hidden job / someone else's CV. ✅ built |
+| `GET /candidate/applications` | C | FR-CAN-013 | Own applications with job title, company, current status. ✅ built |
+| `GET /candidate/applications/{id}` | C | FR-CAN-013 | Includes status history and any rejection message; **never** internal notes; another candidate's → `404`. ✅ built |
 
 ### 4.6 Company – employer – `/api/v1/employer/company`
 | Method & path | Role | Requirement | Notes |

@@ -53,6 +53,13 @@ jobs:
         ports:
           - 1025:1025
           - 8025:8025
+      s3:
+        # Same image as docker-compose.yml; CV storage for integration tests.
+        image: adobe/s3mock:5.2.3
+        env:
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: jobconnect-cvs
+        ports:
+          - 9090:9090
     env:
       DATABASE_URL: postgresql://jobconnect:jobconnect@localhost:5432/jobconnect
       # Test-only values; real secrets live in the host's secret store (NFR-SEC-010).
@@ -61,13 +68,31 @@ jobs:
       SMTP_URL: smtp://localhost:1025
       EMAIL_FROM: JobConnect CI <ci@jobconnect.local>
       HIBP_ENABLED: "false"
+      S3_ENDPOINT: http://localhost:9090
+      S3_REGION: auto
+      S3_BUCKET: jobconnect-cvs
+      S3_ACCESS_KEY_ID: ci
+      S3_SECRET_ACCESS_KEY: ci
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # needed to compare migrations with the PR's base branch
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Applied migrations are immutable: Prisma checksums them, and changing one breaks every
+      # environment that already ran it. Only new migration files may be added.
+      - name: Existing migrations are unchanged
+        if: github.event_name == 'pull_request'
+        run: |
+          changed=$(git diff --name-only --diff-filter=MDR "origin/${{ github.base_ref }}...HEAD" -- prisma/migrations | grep -v migration_lock.toml || true)
+          if [ -n "$changed" ]; then
+            echo "::error::Existing migrations must not be modified, renamed or deleted – add a new migration instead:"
+            echo "$changed"
+            exit 1
+          fi
       # Applies every migration to an empty database, exactly as a deploy would.
       - run: npm run db:deploy
       # Fails if the schema and the migrations disagree (a forgotten migration).

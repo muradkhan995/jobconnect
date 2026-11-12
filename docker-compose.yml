@@ -1,5 +1,5 @@
 # Local development services. Production uses managed services (docs/06-architecture/01-system-architecture.md §4).
-# Object storage (S3) is added with the story that needs it.
+# Production uses Cloudflare R2 for files; locally s3mock speaks the same S3 API.
 services:
   postgres:
     # Keep the major version equal to production (Neon) – docs/05-design/01-data-model.md §7.
@@ -31,6 +31,15 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  s3:
+    # S3-compatible storage for CVs (local/CI only). NOTE: s3mock does not verify request
+    # signatures, so signed-URL expiry is only enforced by real R2 (docs/08-testing).
+    image: adobe/s3mock:5.2.3
+    environment:
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: jobconnect-cvs
+    ports:
+      - "127.0.0.1:9090:9090"
 
 volumes:
   postgres-data:

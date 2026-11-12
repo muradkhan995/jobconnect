@@ -18,6 +18,7 @@ import { isJobVisible } from "@/modules/job/search";
 const ROLE_AREAS = [
   { prefix: "/admin", role: "ADMIN" },
   { prefix: "/employer", role: "EMPLOYER" },
+  { prefix: "/candidate", role: "CANDIDATE" },
 ] as const;
 
 function areaFor(pathname: string) {
