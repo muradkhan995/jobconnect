@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    // Every route renders per request on purpose (CSP nonce, ADR-008), so checking each page
+    // for an instant static shell only produces noise. Validate only segments that opt in.
+    instantInsights: { validationLevel: "manual-warning" },
+  },
   turbopack: {
     // Pin the project root. Without it, a stray package-lock.json in a parent
     // folder (e.g. the home directory) makes Turbopack guess the wrong root.

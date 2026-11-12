@@ -1,5 +1,5 @@
 # Local development services. Production uses managed services (docs/08-system-architecture.md §4).
-# Object storage (S3) and the email catcher are added with the stories that need them.
+# Object storage (S3) is added with the story that needs it.
 services:
   postgres:
     # Keep the major version equal to production (Neon) – docs/09-data-model.md §7.
@@ -16,6 +16,18 @@ services:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U jobconnect -d jobconnect"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    # Catches every email the app sends locally. Inbox UI: http://localhost:8025
+    image: axllent/mailpit:v1.32.0
+    ports:
+      - "127.0.0.1:1025:1025" # SMTP
+      - "127.0.0.1:8025:8025" # web UI
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
       interval: 5s
       timeout: 3s
       retries: 10

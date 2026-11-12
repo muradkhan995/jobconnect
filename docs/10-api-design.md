@@ -63,7 +63,7 @@ All errors use **RFC 9457 Problem Details** (`Content-Type: application/problem+
 | 401 | `UNAUTHENTICATED` | No valid session |
 | 403 | `FORBIDDEN_ROLE`, `CSRF_ORIGIN_MISMATCH`, `ACCOUNT_SUSPENDED` | Wrong role / bad origin / suspended |
 | 404 | `NOT_FOUND` | Doesn't exist **or** not yours (§1.2) |
-| 409 | `ALREADY_APPLIED`, `INVALID_TRANSITION`, `STATE_CHANGED`, `EMAIL_TAKEN` | Business rule or a race lost (data model §4 guarded update) |
+| 409 | `ALREADY_APPLIED`, `INVALID_TRANSITION`, `STATE_CHANGED` | Business rule or a race lost (data model §4 guarded update) |
 | 413 | `FILE_TOO_LARGE` | Upload > limit |
 | 415 | `UNSUPPORTED_FILE_TYPE` | File content isn't PDF/DOCX (checked by magic bytes) |
 | 422 | `DEADLINE_PASSED`, `COMPANY_NOT_VERIFIED`, `CV_LIMIT_REACHED`, `DEADLINE_OUT_OF_RANGE` | Valid input, but a business rule blocks it |
@@ -87,7 +87,7 @@ at any depth.
 ### 4.1 Authentication – handled by Better Auth at `/api/auth/*`
 | Method & path | Role | Requirement | Notes |
 |---|---|---|---|
-| `POST /api/auth/sign-up/email` | 🌐 | FR-AUTH-001/003/004, NFR-PRV-002 | Body includes `role` (`CANDIDATE`/`EMPLOYER` only) and `privacyPolicyVersion`; password checked against breached list ✍️ |
+| `POST /api/auth/sign-up/email` | 🌐 | FR-AUTH-001/003/004, NFR-PRV-002 | Body includes `name`, `role` (`CANDIDATE`/`EMPLOYER` only) and `privacyPolicyVersion`; password checked against breached list. **An already-registered email gets the same 200 response** (no account is created; the owner is emailed instead), so sign-up can't reveal who is registered – replaces `409 EMAIL_TAKEN` (2026-11-12) ✍️ |
 | `GET /api/auth/verify-email?token=` | 🌐 | FR-AUTH-005/006 | Token valid 24 h |
 | `POST /api/auth/sign-in/email` | 🌐 | FR-AUTH-006/009 | Rejects unverified and suspended users; rate-limited ✍️ (success and failure) |
 | `POST /api/auth/sign-out` | 👤 | FR-AUTH-007 | Deletes the session |
