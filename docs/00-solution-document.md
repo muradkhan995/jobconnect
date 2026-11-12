@@ -6,8 +6,8 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.6 |
-| Status | Current – reflects branch `feat/candidate-apply` (on top of `main` at `143149a`, PR #19, + fix `1e1a2df`) |
+| Version | 1.7 |
+| Status | Current – reflects branch `feat/demo-data` (on top of `main` at `8b02103`, PR #22) |
 | Phase | 3 – Build (MVP, release 0.1) |
 | Owner | Product Owner |
 | Last updated | 2026-11-12 |
@@ -383,6 +383,11 @@ npm run dev                                     # http://localhost:3000 · inbox
 **Demo users** (local only): candidate, employer and admin – emails and the shared password are in
 [`prisma/demo-users.ts`](../prisma/demo-users.ts). Recreate with `npm run db:seed`.
 
+**Demo data** (local only): `npm run db:seed:demo` creates 100 fictional companies (80 verified, 10 pending,
+6 rejected, 4 suspended), one employer each (`employer001…100@demo-data.jobconnect.local`), 50 candidates with
+profiles, 2 admins and ~210 jobs in every status – deterministic, re-runnable, same password.
+`-- --clean-test-data` also removes leftovers of automated test runs.
+
 ---
 
 ## 12. Decision log
@@ -437,6 +442,7 @@ Product and implementation decisions:
 | D-31 | 2026-11-12 | CV type is detected from the file's bytes; filenames are cleaned and stored only for display; files live under random keys | Dev |
 | D-32 | 2026-11-12 | Applied migrations are immutable; CI rejects PRs that change them (after defect #28) | Dev |
 | D-33 | 2026-11-12 | Candidates without a profile/CV are sent to Profile & CVs and back (not an inline upload in the apply sheet) | Dev |
+| D-34 | 2026-11-12 | Demo data is generated, not hand-written: fictional names, `.example` websites, fixed random seed, local-only guard; test-leftover cleanup only by test-only email prefixes | Dev |
 
 ---
 
@@ -446,9 +452,10 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
-| 2026-11-12 | *(open)* | Step-by-step system walkthrough: 62 screenshots in journey order (docs/04-design/07) |
-| 2026-11-12 | *(open)* | Sprint S3: candidate profile, CVs (s3mock/R2), apply with snapshot, My applications + timeline, candidate tab bar, employer application counts; CI migration guard; nullish form fix |
-| 2026-11-12 | *(open)* | Fix: restore 4 applied migrations altered by the docs restructure (`fix/restore-applied-migrations`) |
+| 2026-11-12 | *(open)* | Demo data: `npm run db:seed:demo` – 100 companies, 152 users, ~210 jobs; optional cleanup of automated-test leftovers |
+| 2026-11-12 | #22 | Step-by-step system walkthrough: 62 screenshots in journey order (docs/04-design/07) |
+| 2026-11-12 | #21 | Sprint S3: candidate profile, CVs (s3mock/R2), apply with snapshot, My applications + timeline, candidate tab bar, employer application counts; CI migration guard; nullish form fix |
+| 2026-11-12 | #20 | Fix: restore 4 applied migrations altered by the docs restructure (`fix/restore-applied-migrations`) |
 | 2026-11-12 | #19 | Documentation set: folders 01–12 (moved with history), 39 new documents, 63 Mermaid diagrams, generated test catalogue |
 | 2026-11-12 | #18 | Sprint S2: public job search (stored search_vector, GIN), job details, public API, real 404s; login/logout/mobile fixes |
 | 2026-11-12 | #17 | Jobs – sprint S1 (core loop step 2) + docs sync |

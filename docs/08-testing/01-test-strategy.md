@@ -48,6 +48,8 @@ flowchart TB
 | Need | Source |
 |---|---|
 | Demo users per role | `npm run db:seed` (`prisma/demo-users.ts`) |
+| Realistic volume for demos and manual testing | `npm run db:seed:demo` – 100 companies (all statuses), 100 employers, 50 candidates, 2 admins, ~210 jobs; deterministic and re-runnable (`prisma/seed-demo-data.ts`) |
+| Clean up after automated runs | `npm run db:seed:demo -- --clean-test-data` removes only accounts with test prefixes (`e2e-`, `qa-`, `int-`, `repro-`, `timing-`) at `@example.com` |
 | Isolated E2E users/companies/jobs | `e2e/db.ts` helpers (local DB only) |
 | Search isolation | A unique made-up word per run in titles |
 | Rate limits | Cleared before each E2E test (`resetRateLimits`) |
