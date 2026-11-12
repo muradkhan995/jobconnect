@@ -14,6 +14,7 @@ cp .env.example .env.local   # set BETTER_AUTH_SECRET: openssl rand -base64 32
 npm run db:up                # Docker: PostgreSQL 17 + Mailpit
 npm run db:deploy            # apply migrations
 npm run db:seed              # demo users (see prisma/demo-users.ts)
+npm run db:seed:demo         # optional: 100 companies, 152 users, ~210 jobs
 npx playwright install chromium
 npm run dev                  # http://localhost:3000 · inbox http://localhost:8025
 ```

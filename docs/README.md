@@ -5,6 +5,9 @@
 >
 > **Want to see it working?** The **[step-by-step system walkthrough](04-design/07-system-walkthrough.md)** shows
 > every flow in 62 real screenshots.
+>
+> **New to the project?** The **[Project Guide](../PROJECT_GUIDE.md)** explains every folder and file, how a
+> request travels through the code, and everything done so far.
 
 Diagrams are written in [Mermaid](https://mermaid.js.org/) and render directly on GitHub.
 Anything not built yet is marked **planned**.

@@ -6,6 +6,8 @@ A job marketplace that connects candidates with **verified employers** and shows
 Portfolio project built to production standard (UK/EU GDPR). Documentation lives in [`docs/`](docs/) – start
 with the [documentation map](docs/README.md) and the [Software Solution Document](docs/00-solution-document.md).
 To see every flow in screenshots, open the [step-by-step walkthrough](docs/04-design/07-system-walkthrough.md).
+New to the project? Read the **[Project Guide](PROJECT_GUIDE.md)** – every folder and file explained, how it all
+fits together, and everything done so far.
 
 ## Tech stack
 
@@ -34,6 +36,18 @@ Creates one confirmed account per role – **candidate**, **employer** and **adm
 shared password in [`prisma/demo-users.ts`](prisma/demo-users.ts). The seed refuses to run against
 anything but a local database.
 
+### Demo data – 100 companies (local only)
+
+```bash
+npm run db:seed:demo                        # 100 companies, 152 users, ~210 jobs
+npm run db:seed:demo -- --clean-test-data   # also remove leftovers of automated test runs
+```
+
+100 fictional companies (80 verified, 10 pending, 6 rejected, 4 suspended), one employer each
+(`employer001…employer100@demo-data.jobconnect.local`), 50 candidates with profiles (`candidate001…050`),
+2 admins (`admin001…002`) and ~210 jobs in every status. Same password as the demo users. Re-running
+resets the data; it never touches other accounts.
+
 Health check: <http://localhost:3000/api/health>
 
 Emails the app sends locally (sign-up confirmation, password reset) land in **Mailpit**:
@@ -57,6 +71,7 @@ Emails the app sends locally (sign-up confirmation, password reset) land in **Ma
 | `npm run db:generate`                       | Regenerate the Prisma client (also runs after `npm install`)                                                                                                                           |
 | `npm run db:studio`                         | Browse the local database                                                                                                                                                              |
 | `npm run db:seed`                           | Create / reset the local demo users                                                                                                                                                    |
+| `npm run db:seed:demo`                      | 100 demo companies + 152 users + ~210 jobs (`-- --clean-test-data` also removes automated-test leftovers)                                                                              |
 | `npm run perf:search`                       | Search speed check (NFR-PERF-001): 10,000 jobs, p95 per query; rolls back afterwards                                                                                                   |
 | `npm run docs:test-cases`                   | Regenerate `docs/08-testing/03-test-cases.md` from the test files                                                                                                                      |
 
