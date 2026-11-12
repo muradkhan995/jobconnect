@@ -56,10 +56,11 @@ and expensive later. Release 1.0 tables are listed in §8 but not designed in de
 | Column | Type | Rules |
 |---|---|---|
 | id | uuid PK | |
+| name | text | NOT NULL – display name (required by Better Auth); the candidate's full name also lives on `candidate_profile` |
 | email | citext | **UNIQUE**, NOT NULL |
-| email_verified | boolean | default false (FR-AUTH-006) |
+| email_verified | boolean | default false (FR-AUTH-006). **This is the "UNVERIFIED" state** of BR §1 |
 | role | enum `user_role` | CANDIDATE, EMPLOYER, ADMIN – never ADMIN via signup (FR-AUTH-002) |
-| status | enum `user_status` | UNVERIFIED, ACTIVE, SUSPENDED, DELETED (BR §1) |
+| status | enum `user_status` | ACTIVE, SUSPENDED, DELETED. UNVERIFIED is not a status value: it is `email_verified = false`, so verification has one source of truth (changed 2026-11-12) |
 | status_reason | text | NULL; required when SUSPENDED (FR-ADM-006) – CHECK |
 | privacy_consent_at | timestamptz | NOT NULL (NFR-PRV-002) |
 | privacy_policy_version | text | NOT NULL – which policy version they accepted |

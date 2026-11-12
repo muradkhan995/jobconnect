@@ -47,8 +47,20 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U jobconnect -d jobconnect"
           --health-interval 5s --health-timeout 3s --health-retries 10
+      mailpit:
+        # Same image as docker-compose.yml; catches the auth emails the tests send.
+        image: axllent/mailpit:v1.32.0
+        ports:
+          - 1025:1025
+          - 8025:8025
     env:
       DATABASE_URL: postgresql://jobconnect:jobconnect@localhost:5432/jobconnect
+      # Test-only values; real secrets live in the host's secret store (NFR-SEC-010).
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
+      BETTER_AUTH_URL: http://localhost:3000
+      SMTP_URL: smtp://localhost:1025
+      EMAIL_FROM: JobConnect CI <ci@jobconnect.local>
+      HIBP_ENABLED: "false"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

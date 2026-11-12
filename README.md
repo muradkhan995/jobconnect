@@ -17,12 +17,15 @@ Requirements: **Node 22** (`nvm use`) and **Docker**.
 ```bash
 npm install
 cp .env.example .env.local
-npm run db:up        # start local PostgreSQL
+npm run db:up        # start local PostgreSQL + Mailpit
 npm run db:deploy    # apply database migrations
 npm run dev          # http://localhost:3000
 ```
 
 Health check: <http://localhost:3000/api/health>
+
+Emails the app sends locally (sign-up confirmation, password reset) land in **Mailpit**:
+<http://localhost:8025>. Generate `BETTER_AUTH_SECRET` with `openssl rand -base64 32`.
 
 ## Scripts
 

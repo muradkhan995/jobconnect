@@ -126,7 +126,8 @@ Render, Railway or a small VPS can replace any of them without code changes (R-1
 
 ### 5.1 Request & authorisation
 1. Browser sends a request with an `HttpOnly; Secure; SameSite=Lax` session cookie.
-2. Next.js middleware adds security headers (CSP with nonce, HSTS) and a request ID.
+2. The Next.js proxy (`src/proxy.ts`, formerly "middleware") adds a request ID and a per-request
+   nonce CSP; static security headers (HSTS, nosniff, frame and referrer policies) come from `next.config.ts`.
 3. On state-changing requests, the `Origin` header is checked against our domain (CSRF protection,
    alongside SameSite cookies).
 4. Route handler validates input with Zod → service → **policy check** → repository.
@@ -209,6 +210,7 @@ The MVP contains **no AI code**. To make adding it later safe and easy:
 | ADR-005 | pg-boss queue in Postgres | Redis + BullMQ | One fewer service and bill |
 | ADR-006 | Docker on Fly.io (London) | Vercel serverless | Long-running worker needed; UK region; portable container (R-13) |
 | ADR-007 | S3-compatible private storage | Files in DB or on server disk | Signed URLs, stateless servers, cheap storage |
+| ADR-008 | Nonce-based CSP; every route renders per request (`instant = false` on the root layout, Cache Components kept on) | CSP with `'unsafe-inline'` scripts, or experimental hash-based SRI with static shells | Strongest XSS protection for a Must (NFR-SEC-005); pages are mostly personal and dynamic anyway. Cost: no static shells/CDN caching of pages. Revisit for public job pages if NFR-PERF-002 is missed |
 
 **Trade-offs we accept:** one deployable means a bug in one module can affect the whole app (mitigated
 by tests and module boundaries); Next.js has a learning curve (R-03; mitigated by its large docs and community);

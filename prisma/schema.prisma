@@ -9,3 +9,131 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+/// Roles a user can have (docs/09-data-model.md §3.1). Also copied onto audit entries.
+enum UserRole {
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+
+  @@map("user_role")
+}
+
+/// Account status (BR §1). "Unverified" is not a status: it is `emailVerified = false`,
+/// so there is one source of truth for verification (Better Auth owns that flag).
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+
+  @@map("user_status")
+}
+
+/// Better Auth core user + JobConnect fields (docs/09 §3.1). Field names follow Better Auth.
+model User {
+  id                   String     @id @db.Uuid
+  name                 String
+  email                String     @unique @db.Citext
+  emailVerified        Boolean    @default(false) @map("email_verified")
+  image                String?
+  role                 UserRole
+  status               UserStatus @default(ACTIVE)
+  /// Required when SUSPENDED (FR-ADM-006) – CHECK in migration.
+  statusReason         String?    @map("status_reason")
+  privacyConsentAt     DateTime   @map("privacy_consent_at") @db.Timestamptz(3)
+  privacyPolicyVersion String     @map("privacy_policy_version")
+  deletedAt            DateTime?  @map("deleted_at") @db.Timestamptz(3)
+  createdAt            DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sessions Session[]
+  accounts Account[]
+
+  @@index([role, status])
+  @@map("user")
+}
+
+/// Login sessions; the cookie holds only the opaque token (NFR-SEC-006).
+model Session {
+  id        String   @id @db.Uuid
+  token     String   @unique
+  userId    String   @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+/// Credentials. For email + password, `password` is the Argon2id hash (NFR-SEC-001).
+model Account {
+  id                    String    @id @db.Uuid
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id") @db.Uuid
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(3)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+/// Email-verification and password-reset tokens with expiry (FR-AUTH-005/008).
+model Verification {
+  id         String   @id @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+/// Rate-limit counters in the database, so limits hold across instances (NFR-SEC-007).
+model RateLimit {
+  id          String @id @db.Uuid
+  key         String @unique
+  count       Int
+  lastRequest BigInt @map("last_request")
+
+  @@map("rate_limit")
+}
+
+/// Append-only record of admin actions and security events (FR-ADM-019/021, docs/09 §3.10).
+/// No foreign keys on purpose: entries must survive user deletion and are never updated.
+/// The database rejects UPDATE/TRUNCATE, and DELETE of entries younger than 24 months
+/// (BR-AUD-001) – see the migration's triggers.
+model AuditLog {
+  id          BigInt    @id @default(autoincrement())
+  occurredAt  DateTime  @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  actorUserId String?   @map("actor_user_id") @db.Uuid
+  actorRole   UserRole? @map("actor_role")
+  action      String
+  targetType  String?   @map("target_type")
+  targetId    String?   @map("target_id") @db.Uuid
+  ipAddress   String?   @map("ip_address") @db.Inet
+  requestId   String?   @map("request_id")
+  /// Reasons and old/new statuses only – never names, emails or CV content (NFR-PRV-004).
+  metadata    Json      @default("{}")
+
+  @@index([occurredAt(sort: Desc)])
+  @@index([targetType, targetId])
+  @@index([actorUserId])
+  @@map("audit_log")
+}
