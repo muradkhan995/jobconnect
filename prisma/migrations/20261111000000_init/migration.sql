@@ -1,4 +1,4 @@
--- Base database conventions (docs/05-design/01-data-model.md §1).
+-- Base database conventions (docs/09-data-model.md §1).
 
 -- Case-insensitive text for emails (FR-AUTH-004).
 CREATE EXTENSION IF NOT EXISTS citext;

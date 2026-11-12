@@ -1,6 +1,6 @@
--- Full-text search over published jobs (FR-CAN-006, NFR-PERF-001, docs/05-design/01-data-model.md §5 Q1).
+-- Full-text search over published jobs (FR-CAN-006, NFR-PERF-001, docs/09 §5 Q1).
 --
--- docs/05-design/01-data-model.md planned a generated `search_vector` column. Prisma cannot model generated columns,
+-- docs/09 planned a generated `search_vector` column. Prisma cannot model generated columns,
 -- so the schema-drift check would flag it forever. An expression index on an IMMUTABLE
 -- function gives the same speed and keeps the Prisma schema honest (decision D-24).
 -- Queries MUST call job_search_document(...) with exactly these arguments to use the index.
