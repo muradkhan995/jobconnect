@@ -9,3 +9,35 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+/// Roles a user can have (docs/09-data-model.md §3.1). Also copied onto audit entries.
+enum UserRole {
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+
+  @@map("user_role")
+}
+
+/// Append-only record of admin actions and security events (FR-ADM-019/021, docs/09 §3.10).
+/// No foreign keys on purpose: entries must survive user deletion and are never updated.
+/// The database rejects UPDATE/TRUNCATE, and DELETE of entries younger than 24 months
+/// (BR-AUD-001) – see the migration's triggers.
+model AuditLog {
+  id          BigInt    @id @default(autoincrement())
+  occurredAt  DateTime  @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  actorUserId String?   @map("actor_user_id") @db.Uuid
+  actorRole   UserRole? @map("actor_role")
+  action      String
+  targetType  String?   @map("target_type")
+  targetId    String?   @map("target_id") @db.Uuid
+  ipAddress   String?   @map("ip_address") @db.Inet
+  requestId   String?   @map("request_id")
+  /// Reasons and old/new statuses only – never names, emails or CV content (NFR-PRV-004).
+  metadata    Json      @default("{}")
+
+  @@index([occurredAt(sort: Desc)])
+  @@index([targetType, targetId])
+  @@index([actorUserId])
+  @@map("audit_log")
+}

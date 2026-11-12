@@ -1,26 +1,7 @@
 import pino, { type DestinationStream, type Logger } from "pino";
+import { SENSITIVE_KEYS } from "@/lib/privacy";
 
-/**
- * Field names that may hold personal data or secrets. Redacted at the top level and
- * one level deep, so `log.info({ user })` can't leak an email (NFR-PRV-004, NFR-SEC-001).
- */
-const SENSITIVE_KEYS = [
-  "email",
-  "password",
-  "currentPassword",
-  "newPassword",
-  "passwordHash",
-  "name",
-  "fullName",
-  "phone",
-  "coverLetter",
-  "token",
-  "secret",
-  "cookie",
-  "authorization",
-  "ip",
-  "ipAddress",
-];
+/** Redacted at the top level and one level deep, so `log.info({ user })` can't leak an email. */
 
 export const REDACT_PATHS = [
   ...SENSITIVE_KEYS,
