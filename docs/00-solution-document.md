@@ -6,7 +6,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.7 |
+| Version | 1.8 |
 | Status | Current – reflects branch `feat/demo-data` (on top of `main` at `8b02103`, PR #22) |
 | Phase | 3 – Build (MVP, release 0.1) |
 | Owner | Product Owner |
@@ -452,6 +452,7 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
+| 2026-11-12 | *(open)* | Project guide (`PROJECT_GUIDE.md`): every folder and file explained, request flow, history, "where do I find…"; linked from README and docs map |
 | 2026-11-12 | *(open)* | Demo data: `npm run db:seed:demo` – 100 companies, 152 users, ~210 jobs; optional cleanup of automated-test leftovers |
 | 2026-11-12 | #22 | Step-by-step system walkthrough: 62 screenshots in journey order (docs/04-design/07) |
 | 2026-11-12 | #21 | Sprint S3: candidate profile, CVs (s3mock/R2), apply with snapshot, My applications + timeline, candidate tab bar, employer application counts; CI migration guard; nullish form fix |
@@ -528,7 +529,8 @@ Planned as sprints S1–S6 in [docs/07-implementation/01-agile-methodology.md §
 
 ## 16. Document index
 
-The full map, with every document, is **[docs/README.md](README.md)**. Folders:
+The full map, with every document, is **[docs/README.md](README.md)**. For a guided tour of the whole
+repository (every folder and file), read **[PROJECT_GUIDE.md](../PROJECT_GUIDE.md)**. Folders:
 
 | Folder | Contents |
 |---|---|
