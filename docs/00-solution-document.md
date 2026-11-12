@@ -446,6 +446,7 @@ Newest first. One row per merged pull request.
 
 | Date | PR | Change |
 |---|---|---|
+| 2026-11-12 | *(open)* | Step-by-step system walkthrough: 62 screenshots in journey order (docs/04-design/07) |
 | 2026-11-12 | *(open)* | Sprint S3: candidate profile, CVs (s3mock/R2), apply with snapshot, My applications + timeline, candidate tab bar, employer application counts; CI migration guard; nullish form fix |
 | 2026-11-12 | *(open)* | Fix: restore 4 applied migrations altered by the docs restructure (`fix/restore-applied-migrations`) |
 | 2026-11-12 | #19 | Documentation set: folders 01–12 (moved with history), 39 new documents, 63 Mermaid diagrams, generated test catalogue |
@@ -527,7 +528,7 @@ The full map, with every document, is **[docs/README.md](README.md)**. Folders:
 | [01-overview](01-overview/) | Project overview (context diagram), glossary |
 | [02-product-strategy](02-product-strategy/) | Vision, personas, user journeys, value proposition, scope & risks, MVP, roadmap & KPIs |
 | [03-requirements](03-requirements/) | Functional, non-functional, business rules, use cases, user stories, traceability matrix |
-| [04-design](04-design/) | UX/UI: UI flows, sitemap & navigation, user-flow diagrams, screen inventory, design system, accessibility |
+| [04-design](04-design/) | UX/UI: UI flows, sitemap & navigation, user-flow diagrams, screen inventory, design system, accessibility, **step-by-step walkthrough (62 screenshots)** |
 | [05-design](05-design/) | Technical: data model, API, state diagrams, sequence diagrams, ER diagram, security design |
 | [06-architecture](06-architecture/) | System architecture, C4 diagrams, ADR log (ADR-001…011), technology stack |
 | [07-implementation](07-implementation/) | Agile methodology, codebase structure, coding standards, development workflow, feature guide |

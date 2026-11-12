@@ -5,6 +5,7 @@ A job marketplace that connects candidates with **verified employers** and shows
 
 Portfolio project built to production standard (UK/EU GDPR). Documentation lives in [`docs/`](docs/) – start
 with the [documentation map](docs/README.md) and the [Software Solution Document](docs/00-solution-document.md).
+To see every flow in screenshots, open the [step-by-step walkthrough](docs/04-design/07-system-walkthrough.md).
 
 ## Tech stack
 
