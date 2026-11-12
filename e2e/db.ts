@@ -58,3 +58,21 @@ export async function createUser(
 export async function resetRateLimits() {
   await withDb((c) => c.query('DELETE FROM "rate_limit"'));
 }
+
+/** An employer whose company is already VERIFIED – the starting point for job tests. */
+export async function createVerifiedEmployer(
+  name: string,
+  companyName: string,
+) {
+  const user = await createUser("EMPLOYER", name);
+  await withDb((c) =>
+    c.query(
+      `INSERT INTO company (id, owner_user_id, name, description, industry_id, size, location,
+         verification_status, verified_at, updated_at)
+       VALUES ($1, $2, $3, 'A verified company created for end-to-end tests in Leeds.',
+         '01a1cd0d-dc07-78b7-898d-42f24fd57db7', 'SIZE_51_200', 'Leeds', 'VERIFIED', now(), now())`,
+      [uuidv7(), user.id, companyName],
+    ),
+  );
+  return user;
+}

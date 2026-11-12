@@ -11,7 +11,8 @@ export const metadata: Metadata = { title: "Employer · JobConnect" };
 const NEXT_STEP = {
   PENDING:
     "Our team is checking your company. You'll get an email when it's done – usually within 1 working day.",
-  VERIFIED: "You're verified. Job posting is coming next.",
+  VERIFIED:
+    "You're verified. Submit jobs for approval and they go live once our team checks them.",
   REJECTED:
     "Your company needs changes before it can be verified. See the reason below, edit and resubmit.",
   SUSPENDED:
@@ -80,6 +81,14 @@ export default async function EmployerHome({
               <dd>{company.location}</dd>
             </div>
           </dl>
+          <Link
+            href="/employer/jobs"
+            className="self-start text-sm font-medium underline"
+          >
+            {company.verificationStatus === "VERIFIED"
+              ? "Manage your jobs"
+              : "Write job drafts"}
+          </Link>
           {company.verificationStatus !== "SUSPENDED" && (
             <Link
               href="/employer/company"

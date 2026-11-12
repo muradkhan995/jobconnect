@@ -137,14 +137,14 @@ Paths are Better Auth's defaults; we don't rename them. Signup role and consent 
 ### 4.7 Jobs – employer – `/api/v1/employer/jobs`
 | Method & path | Role | Requirement | Notes |
 |---|---|---|---|
-| `GET /employer/jobs` | E | FR-EMP-013 | Own company's jobs, all statuses, with `applicationCount` |
-| `POST /employer/jobs` | E | FR-EMP-006 | Creates a `DRAFT` |
-| `GET /employer/jobs/{id}` | E | FR-EMP-009 | Includes `statusReason` if rejected/removed |
-| `PATCH /employer/jobs/{id}` | E | FR-EMP-009, BR-JOB-004/005 | Material edit on `PUBLISHED` → back to `PENDING_APPROVAL`; response says so |
-| `POST /employer/jobs/{id}/submit` | E | FR-EMP-007/008, BR-CMP-001, BR-JOB-002 | `422 COMPANY_NOT_VERIFIED`, `422 DEADLINE_OUT_OF_RANGE` |
-| `POST /employer/jobs/{id}/pause` | E | FR-EMP-010 | `PUBLISHED → PAUSED` |
-| `POST /employer/jobs/{id}/resume` | E | FR-EMP-010 | `PAUSED → PUBLISHED` (deadline must still be in future) |
-| `POST /employer/jobs/{id}/close` | E | FR-EMP-011, BR-JOB-007 | Final |
+| `GET /employer/jobs` | E | FR-EMP-013 | Own company's jobs, all statuses. `applicationCount` added with applications (S3). ✅ built |
+| `POST /employer/jobs` | E | FR-EMP-006/007 | Creates a `DRAFT` (allowed before the company is verified); deadline must be in the future. ✅ built |
+| `GET /employer/jobs/{id}` | E | FR-EMP-009 | Includes `statusReason` if rejected/removed; another company's job → `404`. ✅ built |
+| `PATCH /employer/jobs/{id}` | E | FR-EMP-009, BR-JOB-004/005 | Full job body. Material edit (title, description, requirements, salary) on `PUBLISHED`/`PAUSED` → `PENDING_APPROVAL`; `REJECTED` → `DRAFT`; response carries the new `status`. ✅ built |
+| `POST /employer/jobs/{id}/submit` | E | FR-EMP-007/008, BR-CMP-001, BR-JOB-002 | `422 COMPANY_NOT_VERIFIED`, `422 DEADLINE_OUT_OF_RANGE`. ✅ built |
+| `POST /employer/jobs/{id}/pause` | E | FR-EMP-010 | `PUBLISHED → PAUSED`. ✅ built |
+| `POST /employer/jobs/{id}/resume` | E | FR-EMP-010 | `PAUSED → PUBLISHED`; `422 DEADLINE_PASSED`, `422 COMPANY_NOT_VERIFIED`. ✅ built |
+| `POST /employer/jobs/{id}/close` | E | FR-EMP-011, BR-JOB-007 | From `PUBLISHED`/`PAUSED`; final. ✅ built |
 
 ### 4.8 Applications – employer – `/api/v1/employer`
 | Method & path | Role | Requirement | Notes |
@@ -172,11 +172,11 @@ All admin endpoints: role A only; every write is ✍️ and requires a `reason` 
 | `POST /admin/companies/{id}/verify` | FR-ADM-008 | Employer emailed. ✅ built ✍️ |
 | `POST /admin/companies/{id}/reject` | FR-ADM-008, BR-CMP-002 | Body `{ reason }` (10–1000 chars); employer emailed with it. ✅ built ✍️ |
 | `POST /admin/companies/{id}/suspend` · `/reinstate` | BR-CMP-002/003 | `suspend` needs `{ reason }`. ✅ built ✍️ |
-| `GET /admin/jobs?status=PENDING_APPROVAL` | FR-ADM-009 | Oldest first |
-| `GET /admin/jobs/{id}` | FR-ADM-010 | |
-| `POST /admin/jobs/{id}/approve` | FR-ADM-010 | ✍️ |
-| `POST /admin/jobs/{id}/reject` | FR-ADM-010 | Body `{ reason }` ✍️ |
-| `POST /admin/jobs/{id}/remove` | FR-ADM-011, BR-JOB-008 | Body `{ reason }`; final ✍️ |
+| `GET /admin/jobs?status=PENDING_APPROVAL` | FR-ADM-009 | Oldest first; max 100. ✅ built |
+| `GET /admin/jobs/{id}` | FR-ADM-010 | ✅ built |
+| `POST /admin/jobs/{id}/approve` | FR-ADM-010 | Company must still be `VERIFIED`; employer emailed. ✅ built ✍️ |
+| `POST /admin/jobs/{id}/reject` | FR-ADM-010 | Body `{ reason }`; employer emailed. ✅ built ✍️ |
+| `POST /admin/jobs/{id}/remove` | FR-ADM-011, BR-JOB-008 | Body `{ reason }`; from pending, published or paused; final; employer emailed. ✅ built ✍️ |
 | `GET /admin/industries` · `POST` · `PATCH /{id}` | FR-ADM-014 | Deactivate via `PATCH { isActive: false }` ✍️ |
 
 Admin accounts are created only by the setup script (`npm run admin:create`), never through the API (FR-ADM-001).

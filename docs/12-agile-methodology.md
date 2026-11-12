@@ -122,9 +122,9 @@ every item traces back to docs/03–05.
 |---|---|---|---|
 | E0 Foundation | Scaffold, CI, DB, security baseline, logging, audit (NFR-SEC/OBS/MNT, FR-ADM-019/021) | 0.1 | ✅ |
 | E1 Authentication | FR-AUTH-001 … 008 | 0.1 | ✅ |
-| E2 Company verification | FR-EMP-001/003/004, FR-ADM-007/008 | 0.1 | ✅ (in review) |
-| E3 Jobs & moderation | FR-EMP-006 … 011, FR-ADM-009 … 011 | 0.1 | ⬜ Next |
-| E4 Job search | FR-CAN-006 … 008 | 0.1 | ⬜ |
+| E2 Company verification | FR-EMP-001/003/004, FR-ADM-007/008 | 0.1 | ✅ |
+| E3 Jobs & moderation | FR-EMP-006 … 011, FR-ADM-009 … 011 | 0.1 | ✅ (sprint S1, in review) |
+| E4 Job search | FR-CAN-006 … 008 | 0.1 | ⬜ Next (S2) |
 | E5 Candidate profile, CVs, applying | FR-CAN-001/005/010 … 013 | 0.1 | ⬜ |
 | E6 Applicant management | FR-EMP-013 … 015/017/018 | 0.1 | ⬜ |
 | E7 Accounts & GDPR | FR-CAN-017/018, FR-ADM-004 … 006, erasure worker (NFR-PRV-003) | 0.1 | ⬜ |
@@ -382,8 +382,9 @@ Increments delivered so far (dates are when merged; details in docs/00 §13):
 | 6 | 2026-11-12 | TypeScript 7 revert (PR #10) | E0 |
 | 7 | 2026-11-12 | Demo users, E2E suite, auth QA report (PR #11) | E1 |
 | 8 | 2026-11-12 | Solution document + docs rule (PR #13) | – |
-| 9 | 2026-11-12 | Company profile + admin verification (in review) | E2 |
-| 10 | 2026-11-12 | This methodology document | – |
+| 9 | 2026-11-12 | Company profile + admin verification (PR #15) | E2 |
+| 10 | 2026-11-12 | This methodology document (PR #16) | – |
+| 11 | 2026-11-12 | Sprint S1: jobs, approval and moderation (in review) | E3 |
 
 *The first increments were delivered faster than the 2-week sprint plan assumes, with AI assistance.
 Formal sprints with measured velocity start with sprint S1 (§15).*

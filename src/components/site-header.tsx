@@ -16,11 +16,13 @@ const ROLE_NAV: Record<
   CANDIDATE: [],
   EMPLOYER: [
     { href: "/employer", label: "Dashboard" },
+    { href: "/employer/jobs", label: "Jobs" },
     { href: "/employer/company", label: "Company" },
   ],
   ADMIN: [
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/companies", label: "Companies" },
+    { href: "/admin/jobs", label: "Jobs" },
   ],
 };
 
