@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "coverage/**",
     "src/generated/**",
+    // Test output (git-ignored, but ESLint doesn't read .gitignore).
+    "playwright-report/**",
+    "test-results/**",
     "next-env.d.ts",
   ]),
 ]);

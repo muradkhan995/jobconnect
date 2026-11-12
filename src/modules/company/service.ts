@@ -1,7 +1,7 @@
 import "server-only";
 import type { CompanyStatus, Prisma } from "@/generated/prisma/client";
 import { getDb } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { sendEmailInBackground } from "@/lib/email";
 import { env } from "@/lib/env";
 import { requestLogger } from "@/lib/logger";
 import {
@@ -224,6 +224,7 @@ export async function decideCompany(
       { field: "reason", message: "Tell the employer why." },
     ]);
   }
+  const started = Date.now();
   const db = getDb();
   const company = await db.company.findUnique({
     where: { id },
@@ -261,10 +262,14 @@ export async function decideCompany(
     });
   });
 
+  const log = requestLogger(meta.requestId);
+  log.info(
+    { companyId: id, action, ms: Date.now() - started },
+    "company decision committed",
+  );
+
   if (company.owner) {
-    // Best effort: the decision is already committed, so a mail outage must not undo or
-    // fail it. Retries arrive with the background worker (docs/08 §5.3).
-    await sendEmail(
+    sendEmailInBackground(
       companyDecisionEmail({
         to: company.owner.email,
         name: company.owner.name,
@@ -273,11 +278,8 @@ export async function decideCompany(
         reason: rule.needsReason ? reason : null,
         url: `${env().BETTER_AUTH_URL}/employer`,
       }),
-    ).catch((err: unknown) =>
-      requestLogger(meta.requestId).error(
-        { err },
-        "company decision email failed",
-      ),
+      log,
+      "company decision",
     );
   }
 

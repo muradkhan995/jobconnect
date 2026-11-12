@@ -1,7 +1,7 @@
 import "server-only";
 import type { JobStatus, Prisma } from "@/generated/prisma/client";
 import { getDb } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { sendEmailInBackground } from "@/lib/email";
 import { env } from "@/lib/env";
 import {
   DomainError,
@@ -322,6 +322,7 @@ export async function decideJob(
   const rule = ADMIN_TRANSITIONS[action];
   if (rule.needsReason && !reason)
     throw fieldError("reason", "Tell the employer why.");
+  const started = Date.now();
   const db = getDb();
   const job = await db.job.findUnique({
     where: { id: jobId },
@@ -369,10 +370,14 @@ export async function decideJob(
     });
   });
 
+  const log = requestLogger(meta.requestId);
+  log.info(
+    { jobId, action, ms: Date.now() - started },
+    "job decision committed",
+  );
   const owner = job.company.owner;
   if (owner) {
-    // Best effort after commit (D-17).
-    await sendEmail(
+    sendEmailInBackground(
       jobDecisionEmail({
         to: owner.email,
         name: owner.name,
@@ -381,8 +386,8 @@ export async function decideJob(
         reason: rule.needsReason ? reason : null,
         url: `${env().BETTER_AUTH_URL}/employer/jobs/${jobId}`,
       }),
-    ).catch((err: unknown) =>
-      requestLogger(meta.requestId).error({ err }, "job decision email failed"),
+      log,
+      "job decision",
     );
   }
 

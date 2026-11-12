@@ -116,8 +116,8 @@ Paths are Better Auth's defaults; we don't rename them. Signup role and consent 
 ### 4.4 Jobs – public – `/api/v1/jobs`
 | Method & path | Role | Requirement | Notes |
 |---|---|---|---|
-| `GET /jobs` | 🌐 | FR-CAN-006/007, NFR-PERF-001 | Query: `q`, `location`, `workMode` (repeatable), `jobType` (repeatable), `cursor`, `limit`. Returns visible jobs only (data model §5) |
-| `GET /jobs/{jobId}` | 🌐 | FR-CAN-008 | `404` if not visible – a paused or removed job looks the same as a missing one |
+| `GET /jobs` | 🌐 | FR-CAN-006/007, NFR-PERF-001 | Query: `q`, `location`, `workMode` (repeatable), `jobType` (repeatable), `cursor`, `limit` (1–50, default 20). Visible jobs only, newest first. Response `{ items, nextCursor, total }`. Invalid filters are ignored, not rejected. ✅ built |
+| `GET /jobs/{jobId}` | 🌐 | FR-CAN-008 | `404` if not visible – a paused or removed job looks the same as a missing one. Public fields only (allow-list, no status/reason). ✅ built |
 | `GET /industries` | 🌐 | – | Active industries, for filters and forms. ✅ built |
 
 ### 4.5 Applications – candidate – `/api/v1/candidate/applications`

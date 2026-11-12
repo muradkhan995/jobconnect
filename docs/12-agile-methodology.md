@@ -123,9 +123,9 @@ every item traces back to docs/03–05.
 | E0 Foundation | Scaffold, CI, DB, security baseline, logging, audit (NFR-SEC/OBS/MNT, FR-ADM-019/021) | 0.1 | ✅ |
 | E1 Authentication | FR-AUTH-001 … 008 | 0.1 | ✅ |
 | E2 Company verification | FR-EMP-001/003/004, FR-ADM-007/008 | 0.1 | ✅ |
-| E3 Jobs & moderation | FR-EMP-006 … 011, FR-ADM-009 … 011 | 0.1 | ✅ (sprint S1, in review) |
-| E4 Job search | FR-CAN-006 … 008 | 0.1 | ⬜ Next (S2) |
-| E5 Candidate profile, CVs, applying | FR-CAN-001/005/010 … 013 | 0.1 | ⬜ |
+| E3 Jobs & moderation | FR-EMP-006 … 011, FR-ADM-009 … 011 | 0.1 | ✅ (sprint S1) |
+| E4 Job search | FR-CAN-006 … 008 | 0.1 | ✅ (sprint S2, in review) |
+| E5 Candidate profile, CVs, applying | FR-CAN-001/005/010 … 013 | 0.1 | ⬜ Next (S3) |
 | E6 Applicant management | FR-EMP-013 … 015/017/018 | 0.1 | ⬜ |
 | E7 Accounts & GDPR | FR-CAN-017/018, FR-ADM-004 … 006, erasure worker (NFR-PRV-003) | 0.1 | ⬜ |
 | E8 Deployment & operations | Hosting, backups, Sentry, E2E in CI (NFR-REL/OBS) | 0.1 | ⬜ |
@@ -384,7 +384,8 @@ Increments delivered so far (dates are when merged; details in docs/00 §13):
 | 8 | 2026-11-12 | Solution document + docs rule (PR #13) | – |
 | 9 | 2026-11-12 | Company profile + admin verification (PR #15) | E2 |
 | 10 | 2026-11-12 | This methodology document (PR #16) | – |
-| 11 | 2026-11-12 | Sprint S1: jobs, approval and moderation (in review) | E3 |
+| 11 | 2026-11-12 | Sprint S1: jobs, approval and moderation (PR #17) | E3 |
+| 12 | 2026-11-12 | Sprint S2: public job search and details (in review) | E4 |
 
 *The first increments were delivered faster than the 2-week sprint plan assumes, with AI assistance.
 Formal sprints with measured velocity start with sprint S1 (§15).*

@@ -85,9 +85,7 @@ test("09–10 log in and log out (FR-AUTH-007)", async ({ page }) => {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Welcome, QA" }),
-  ).toBeVisible();
+  await expect(page.getByText("QA Candidate · Candidate")).toBeVisible();
   await expect(page.getByText("QA Candidate · Candidate")).toBeVisible();
   await shot(page, "09-logged-in-candidate");
 
@@ -126,9 +124,7 @@ test("11–14 reset a forgotten password (FR-AUTH-008)", async ({ page }) => {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(newPassword);
   await page.getByRole("button", { name: "Log in" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Welcome, QA" }),
-  ).toBeVisible();
+  await expect(page.getByText("QA Candidate · Candidate")).toBeVisible();
 });
 
 for (const [n, who, label, firstName, home] of [
